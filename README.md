@@ -34,11 +34,35 @@ This is the actual differentiator — not "smaller context," which turns out to 
 
 ## How it's structured
 
-**Node types:** `epic`, `feature`, `data_model`, `api_contract`, `business_rule`, `decision`, and optionally `ui_component`.
+**Node types**
 
-**Edge types:** `depends_on`, `mutates`, `reads`, `triggers`, `enforces`, `foreign_key`, `calls`, `overrides`, `dispatches` — each with one specific meaning, not a generic "related to." `overrides` and `dispatches` exist because two real failure modes kept showing up during design and testing:
+| Type | Represents |
+|---|---|
+| `epic` | A grouping label for related features. Filtering only — never appears as an edge. |
+| `feature` | A user-facing capability. The most common entry point for implement/explain tasks. |
+| `data_model` | The schema and fields for an entity or value object. |
+| `api_contract` | One endpoint or operation — REST, GraphQL, WebSocket, or SSE. Always its own node, never a section inside a feature. |
+| `business_rule` | A domain constraint or piece of logic that isn't specific to one feature. |
+| `decision` | A documented, intentional exception to what would otherwise look like the correct pattern. Always paired with an `overrides` edge. |
+| `ui_component` *(optional)* | An interface requirement — a button, a form, a screen element. Skip entirely for backend-only projects. |
 
-- **`overrides`** — a `decision` node documenting an intentional exception to a `business_rule` (e.g. "duplicate emails are allowed on legacy-merged accounts"). Traversal always checks for one of these on every node it loads, in both directions — the one deliberate exception to an otherwise forward-only traversal policy, because skipping it doesn't just lose context, it produces a *wrong* understanding of the rule.
+**Edge types**
+
+| Type | Meaning |
+|---|---|
+| `depends_on` | The `from` node can't be understood or implemented without the `to` node already existing. |
+| `mutates` | The `from` node writes or changes data owned by the `to` node. |
+| `reads` | The `from` node reads data owned by the `to` node without changing it. |
+| `triggers` | The `from` node causes the `to` node to execute — typically how a feature is invoked. |
+| `enforces` | The `from` node is where a business rule is actually applied or checked. |
+| `foreign_key` | A field on the `from` data model references the `to` data model. |
+| `calls` | A UI component calls or renders an API contract (only relevant if using `ui_component`). |
+| `overrides` | The `from` node (a `decision`) is a documented, intentional exception to the `to` node (a `business_rule`). |
+| `dispatches` | The `from` node's completion causes the `to` node to run — asynchronously, out of band, not the same request/response cycle. |
+
+Each edge type has one specific meaning, not a generic "related to." `overrides` and `dispatches` exist because two real failure modes kept showing up during design and testing:
+
+- **`overrides`** — traversal always checks for one of these on every node it loads, in both directions — the one deliberate exception to an otherwise forward-only traversal policy, because skipping it doesn't just lose context, it produces a *wrong* understanding of the rule (e.g. "email must be unique" isn't the full picture if a decision exists exempting legacy-merged accounts).
 - **`dispatches`** — a directed cause → effect edge for async, out-of-band completion ("when this job finishes, that one runs"), which is easy to state correctly in prose and easy to lose entirely once that prose gets converted into structure. `depends_on` and `triggers` both look similar but mean something narrower; conflating them was a real bug caught during testing, not a hypothetical.
 
 Everything an agent needs to work inside the graph — how to resolve an entry point, when to traverse forward vs. reverse, how to convert an existing doc or codebase into this structure — lives in six markdown skill files that ship with this package and get copied into your repo, fully yours to edit.
