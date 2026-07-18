@@ -1,0 +1,35 @@
+epics:
+  - id: epic:billing
+    name: Billing
+    path: assets/epic/billing.md
+
+nodes:
+  - id: feature:checkout
+    type: feature
+    epic: epic:billing
+    path: assets/feature/checkout.md
+
+  - id: data_model:Order
+    type: data_model
+    path: assets/data_model/Order.md
+
+  - id: business_rule:BR-0001
+    type: business_rule
+    path: assets/business_rule/BR-0001.md
+
+  - id: decision:DC-0001
+    type: decision
+    path: assets/decision/DC-0001.md
+
+edges:
+  - from: feature:checkout
+    type: mutates
+    to: data_model:Order
+
+  - from: feature:checkout
+    type: enforces
+    to: business_rule:BR-0001
+
+  - from: decision:DC-0001
+    type: overrides
+    to: business_rule:BR-0001

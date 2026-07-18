@@ -1,0 +1,32 @@
+{
+  "name": "traverspec",
+  "version": "0.1.0",
+  "description": "Scaffold and validate a typed, traversable spec graph for AI coding agents.",
+  "license": "MIT",
+  "bin": {
+    "traverspec": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.10"
+  }
+}
