@@ -1,32 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { NODE_TYPES, EDGE_TYPES } from './types';
 
 export interface Finding {
   rule: string;
   message: string;
 }
 
-export const NODE_TYPES = [
-  'epic',
-  'feature',
-  'data_model',
-  'api_contract',
-  'business_rule',
-  'decision',
-  'ui_component',
-];
-
-export const EDGE_TYPES = [
-  'depends_on',
-  'mutates',
-  'reads',
-  'triggers',
-  'enforces',
-  'foreign_key',
-  'calls',
-  'overrides',
-  'dispatches',
-];
+export { NODE_TYPES, EDGE_TYPES };
 
 export const REQUIRED_SKILL_FILES = [
   'start_here.md',
