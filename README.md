@@ -93,6 +93,7 @@ Checks `graph.yaml` for referential integrity, illegal node/edge types, structur
 | `traverspec validate [--json]` | Structural + referential integrity check. Non-zero exit on any issue. |
 | `traverspec add-agent <names>` | Wire up an additional tool later without re-scaffolding (`cursor`, `claude`). |
 | `traverspec add-codeowners --tool <github\|gitlab>` | Gate changes to `traverspec/skills/` behind review. Never run automatically — opt-in, since solo projects don't need it. |
+| `traverspec remove [--yes]` | Remove `traverspec/` and agent entry files from this project. Previews exactly what will be deleted vs. stripped, then asks for confirmation — `--yes` skips the prompt for scripted use. |
 
 ## Honest tradeoffs
 
