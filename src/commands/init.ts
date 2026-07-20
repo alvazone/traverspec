@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { applyAgents } from '../lib/agents';
+import { loadSkillVersions, saveSkillVersions, getCurrentPackageVersion } from '../lib/skillVersions';
 
 const ASSET_TYPES = [
   'epic',
@@ -58,6 +59,9 @@ export function initCommand(options: InitOptions): void {
   const skillsDir = path.join(specRoot, 'skills');
   fs.mkdirSync(skillsDir, { recursive: true });
   const templateSkillsDir = path.join(TEMPLATES_DIR, 'skills');
+  const skillVersions = loadSkillVersions(root);
+  const currentVersion = getCurrentPackageVersion();
+  let skillVersionsChanged = false;
   for (const file of fs.readdirSync(templateSkillsDir)) {
     const dest = path.join(skillsDir, file);
     if (fs.existsSync(dest)) {
@@ -65,7 +69,12 @@ export function initCommand(options: InitOptions): void {
     } else {
       fs.copyFileSync(path.join(templateSkillsDir, file), dest);
       created.push(`traverspec/skills/${file}`);
+      skillVersions[file] = currentVersion;
+      skillVersionsChanged = true;
     }
+  }
+  if (skillVersionsChanged) {
+    saveSkillVersions(root, skillVersions);
   }
 
   const requestedAgents = options.agent ? options.agent.split(',') : [];

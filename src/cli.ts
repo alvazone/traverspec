@@ -5,6 +5,7 @@ import { validateCommand } from './commands/validate';
 import { addAgentCommand } from './commands/addAgent';
 import { addCodeownersCommand } from './commands/addCodeowners';
 import { removeCommand } from './commands/remove';
+import { refreshSkillsCommand } from './commands/refreshSkills';
 
 const program = new Command();
 
@@ -41,5 +42,11 @@ program
   .description('Remove traverspec/ and agent entry files from this project, after a confirmation prompt')
   .option('-y, --yes', 'skip the confirmation prompt')
   .action(removeCommand);
+
+program
+  .command('refresh-skills')
+  .description('Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file')
+  .option('-y, --yes', 'skip the confirmation prompt for files with real content differences')
+  .action(refreshSkillsCommand);
 
 program.parseAsync();

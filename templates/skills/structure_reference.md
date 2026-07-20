@@ -140,6 +140,7 @@ traverspec/
 ├── about.md
 ├── constitution.md
 ├── graph.yaml
+├── skill-versions.json  (tooling metadata — which package version each skill file was last synced from; not for hand-editing)
 ├── skills/
 │   ├── start_here.md
 │   ├── structure_reference.md
