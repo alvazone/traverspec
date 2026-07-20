@@ -4,6 +4,7 @@ import { initCommand } from './commands/init';
 import { validateCommand } from './commands/validate';
 import { addAgentCommand } from './commands/addAgent';
 import { addCodeownersCommand } from './commands/addCodeowners';
+import { removeCommand } from './commands/remove';
 
 const program = new Command();
 
@@ -35,4 +36,10 @@ program
   .requiredOption('--tool <platform>', 'github or gitlab')
   .action(addCodeownersCommand);
 
-program.parse();
+program
+  .command('remove')
+  .description('Remove traverspec/ and agent entry files from this project, after a confirmation prompt')
+  .option('-y, --yes', 'skip the confirmation prompt')
+  .action(removeCommand);
+
+program.parseAsync();
