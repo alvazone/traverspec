@@ -54,9 +54,6 @@ Read the routing file(s) below that match what you're about to do. If a task spa
 **I've been pointed at an existing codebase and asked to produce or update the spec graph from what it actually does** (not a document, not a conversation — the code itself is the source).
 → Read `structure_reference.md`, then `derive_spec_from_code.md`.
 
-**I'm being asked to plan or sequence upcoming work** — what to build next, in what order.
-→ Run `traverspec plan` (add `--epic <name>` if the person named one) rather than tracing `depends_on` edges by hand — that stops being reliable past a small graph. Read the generated wave-plan file and communicate two things when presenting it: features in the same wave aren't ordered relative to each other and need the person's own priority call to sequence further; and if the output reports a cycle or dispatch-grouped set, surface it and ask rather than deciding unilaterally how to resolve it. No separate skill file for this — the command does the actual computation, and there's no judgment call left substantial enough to warrant one.
-
 If you're unsure which of these you're doing, default to reading `structure_reference.md` — it's the foundation every other file assumes you already know.
 
 ---

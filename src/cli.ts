@@ -6,7 +6,6 @@ import { addAgentCommand } from './commands/addAgent';
 import { addCodeownersCommand } from './commands/addCodeowners';
 import { removeCommand } from './commands/remove';
 import { refreshSkillsCommand } from './commands/refreshSkills';
-import { planCommand } from './commands/plan';
 
 const program = new Command();
 
@@ -49,14 +48,5 @@ program
   .description('Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file')
   .option('-y, --yes', 'skip the confirmation prompt for files with real content differences')
   .action(refreshSkillsCommand);
-
-program
-  .command('plan')
-  .description('Generate a dependency-respecting wave plan from feature depends_on/dispatches edges, written to traverspec/plans/')
-  .option('--epic <name>', 'scope the displayed output to one epic (still computed against the whole graph)')
-  .option('--output <name>', 'custom filename (without extension) instead of the epic/whole-graph default')
-  .option('--force', 'overwrite an existing plan file without prompting')
-  .option('--json', 'output machine-readable JSON to stdout instead of writing a file')
-  .action(planCommand);
 
 program.parseAsync();
