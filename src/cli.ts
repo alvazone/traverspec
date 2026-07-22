@@ -6,6 +6,7 @@ import { addAgentCommand } from './commands/addAgent';
 import { addCodeownersCommand } from './commands/addCodeowners';
 import { removeCommand } from './commands/remove';
 import { refreshSkillsCommand } from './commands/refreshSkills';
+import { checkPlanCommand } from './commands/checkPlan';
 
 const program = new Command();
 
@@ -48,5 +49,11 @@ program
   .description('Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file')
   .option('-y, --yes', 'skip the confirmation prompt for files with real content differences')
   .action(refreshSkillsCommand);
+
+program
+  .command('check-plan')
+  .description('Check whether traverspec/plan/plan.md still matches the current graph.yaml, or is stale')
+  .option('--json', 'output machine-readable JSON instead of a human-readable report')
+  .action(checkPlanCommand);
 
 program.parseAsync();

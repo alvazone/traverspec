@@ -54,6 +54,9 @@ Read the routing file(s) below that match what you're about to do. If a task spa
 **I've been pointed at an existing codebase and asked to produce or update the spec graph from what it actually does** (not a document, not a conversation — the code itself is the source).
 → Read `structure_reference.md`, then `derive_spec_from_code.md`.
 
+**I'm asked for a build order, roadmap, or sequencing plan across features** — waves, stages, sprints, "what should we build first."
+→ Read `structure_reference.md`, then `plan.md`.
+
 If you're unsure which of these you're doing, default to reading `structure_reference.md` — it's the foundation every other file assumes you already know.
 
 ---

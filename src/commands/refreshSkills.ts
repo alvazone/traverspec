@@ -29,9 +29,8 @@ export async function refreshSkillsCommand(options: RefreshSkillsOptions): Promi
   }
   if (restamp.length) {
     console.log(
-      `Stale version stamp but content already matches — will silently re-stamp: ${restamp
-        .map((e) => e.file)
-        .join(', ')}`
+      `Stale version stamp but content already matches (ignoring each file's custom-rules section) — ` +
+        `will refresh and re-stamp, preserving any custom rules: ${restamp.map((e) => e.file).join(', ')}`
     );
   }
 

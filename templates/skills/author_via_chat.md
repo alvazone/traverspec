@@ -52,8 +52,20 @@ After writing a node, briefly reflect back what you wrote and ask if it's right 
 
 The same discipline from `ingest_spec.md` applies here: don't treat writing the edges as a separate, optional step after the node is done. As the person describes a new feature, actively listen for what it touches — "this creates an order," "this checks the discount rules" — and write those edges at the same time as the node. If what they're describing clearly depends on or affects something that doesn't exist in the graph yet, say so — that's often the moment to either author that missing piece too, or explicitly note it as something to come back to.
 
+While you're at it, check the new feature's `mutates`/`reads`/`foreign_key` edges against `traverspec/graph.yaml` for other features already touching the same `data_model` — the graph built through conversation stays small, so this is cheap to do node by node rather than saving it for a final sweep. Apply the test in `structure_reference.md` §3a to decide whether that implies a real `depends_on`, or whether the two are just independent peers on the same model (most of the time, they are).
+
 ---
 
 ## Before finishing
 
 Same as ingestion: check `traverspec/graph.yaml` before creating anything (per `start_here.md`), and don't create a second node for something that already exists under a slightly different name — if what the person is describing sounds close to something already in the graph, surface that rather than assuming it's new. Run `traverspec validate` if it's available before considering the node finished, same as `start_here.md` describes — fix anything it reports rather than leaving it for later.
+
+---
+
+## Custom rules
+
+Add project-specific rules or exceptions for this skill below. Everything else in this file can be overwritten when `traverspec refresh-skills` pulls in a package update — content between these two markers never is.
+
+<!-- traverspec:custom-rules:start -->
+(No custom rules yet for this project.)
+<!-- traverspec:custom-rules:end -->

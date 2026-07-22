@@ -92,10 +92,20 @@ When a node already exists for the code you're reading, the task changes from *c
 
 ## Before finishing
 
-Check `traverspec/graph.yaml` once more before presenting results, same as the other authoring skills — confirm nothing you're about to add duplicates something that already exists under a different name. Run `traverspec validate` if it's available (per `start_here.md`) and fix anything it reports — note that it checks structure only, so a clean pass doesn't substitute for the confidence-gating judgment above; it catches a malformed edge, not a canonized bug. Summarize for the person in three groups, not one undifferentiated list: what was written at high confidence, what's flagged as "found in code, unclear if intentional" and needs a human call, and — if you were reconciling — what drift was found and which side needs a decision.
+Check `traverspec/graph.yaml` once more before presenting results, same as the other authoring skills — confirm nothing you're about to add duplicates something that already exists under a different name. As part of that check, also look for the shared-`data_model` dependency case `structure_reference.md` §3a describes: any other feature touching a `data_model` you just added edges to. This is usually cheaper to resolve from code than from prose — "who else writes this field" is often a direct grep for the assignment, not something you have to hold in memory across files. Run `traverspec validate` if it's available (per `start_here.md`) and fix anything it reports — note that it checks structure only, so a clean pass doesn't substitute for the confidence-gating judgment above; it catches a malformed edge, not a canonized bug. Summarize for the person in three groups, not one undifferentiated list: what was written at high confidence, what's flagged as "found in code, unclear if intentional" and needs a human call, and — if you were reconciling — what drift was found and which side needs a decision.
 
 ---
 
 ## What this file does not do
 
 It does not lower the schema bar — everything produced still has to conform to `structure_reference.md` exactly. It does not mean every function or file becomes a node — granularity judgment still applies, just anchored to entry points instead of document sections. And it does not mean code is trusted as a reliable narrator of intent just because it's a reliable narrator of behavior — those are two different questions, and this file exists specifically because conflating them is the main way a code-derived graph goes wrong.
+
+---
+
+## Custom rules
+
+Add project-specific rules or exceptions for this skill below. Everything else in this file can be overwritten when `traverspec refresh-skills` pulls in a package update — content between these two markers never is.
+
+<!-- traverspec:custom-rules:start -->
+(No custom rules yet for this project.)
+<!-- traverspec:custom-rules:end -->

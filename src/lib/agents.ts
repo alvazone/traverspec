@@ -6,7 +6,8 @@ export const KNOWN_AGENTS = ['cursor', 'claude'];
 const AGENTS_MD_CONTENT =
   'This project uses TraverSpec. Before doing any work — writing code, ' +
   'answering a question about how something works, or authoring/updating a spec — ' +
-  'read `traverspec/skills/start_here.md` in full. It tells you what to read next depending on the task.';
+  'read `traverspec/skills/start_here.md` in full. It tells you what to read next depending on the task. ' +
+  'If the user says "spec" or "the spec," they mean this system specifically, not a generic document — route accordingly.';
 
 const CLAUDE_MD_CONTENT = '@AGENTS.md';
 

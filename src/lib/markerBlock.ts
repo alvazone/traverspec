@@ -15,6 +15,11 @@ export const HASH_COMMENT_MARKERS: MarkerStyle = {
   end: '# traverspec:end',
 };
 
+export const CUSTOM_RULES_MARKERS: MarkerStyle = {
+  start: '<!-- traverspec:custom-rules:start -->',
+  end: '<!-- traverspec:custom-rules:end -->',
+};
+
 /**
  * Create or update a marked block inside a file, leaving everything
  * outside the markers untouched. Appends if the file exists but has
@@ -52,6 +57,46 @@ export function upsertMarkedBlock(
 
   fs.writeFileSync(filePath, before + block + after);
   return 'updated';
+}
+
+/**
+ * Read-only counterpart to upsertMarkedBlock, operating on a string already
+ * in memory rather than a file path. Returns the trimmed inner content of
+ * the marked block, or null if the markers aren't present.
+ */
+export function extractMarkedBlockContent(
+  content: string,
+  markers: MarkerStyle = HTML_COMMENT_MARKERS
+): string | null {
+  const startIdx = content.indexOf(markers.start);
+  const endIdx = content.indexOf(markers.end);
+
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
+    return null;
+  }
+
+  return content.slice(startIdx + markers.start.length, endIdx).trim();
+}
+
+/**
+ * Returns content with the marked block's inner text collapsed to nothing,
+ * markers themselves left in place. Lets a caller compare two versions of a
+ * file while ignoring whatever currently sits inside the block — used to
+ * tell "only the preserved section differs" apart from "the actual content
+ * differs" without needing to know what's in the block ahead of time.
+ */
+export function clearMarkedBlockContent(
+  content: string,
+  markers: MarkerStyle = HTML_COMMENT_MARKERS
+): string {
+  const startIdx = content.indexOf(markers.start);
+  const endIdx = content.indexOf(markers.end);
+
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
+    return content;
+  }
+
+  return content.slice(0, startIdx + markers.start.length) + '\n' + content.slice(endIdx);
 }
 
 export type RemoveResult = 'file-deleted' | 'block-stripped' | 'not-found';

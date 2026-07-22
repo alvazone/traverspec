@@ -47,11 +47,22 @@ The lesson from that isn't "be more careful" as a vague instruction — it's spe
 2. Identify likely `epic` groupings, if the document has natural top-level sections. This is low-stakes to get slightly wrong since epics are just labels, not structural commitments.
 3. Work through the document's own structure, converting each section into the node type it most resembles per `structure_reference.md`. Apply the confidence gate from above at each step.
 4. For every node written, before moving to the next section, look back at what you just wrote and ask: does this reference, use, create, or constrain anything else in this document? If yes, that's an edge — write it now, using the correct type from `structure_reference.md` Section 3. Don't defer this to a "pass two" that may not happen.
-5. Before presenting the result, check `traverspec/graph.yaml` (per the rule in `start_here.md`) to confirm you haven't created a duplicate of something that already existed before this ingestion started, and run `traverspec validate` if it's available (per `start_here.md`) — fix anything it reports before moving on.
-6. Summarize for the person: what was written at high confidence, and the specific list of low-confidence items you need their input on. Don't bury the low-confidence flags inside a wall of otherwise-confident output — call them out clearly as a separate list.
+5. Once the whole document has been converted, do one more pass specifically for cross-references step 4 couldn't have caught: for each `data_model` node, look at every feature with a `mutates`, `reads`, or `foreign_key`-chained relationship to it, and check whether any pair implies a real dependency per `structure_reference.md` §3a. This has to wait until the whole document is converted — while processing an early section, you don't yet know what a later section will reveal about who else touches the same model. Write anything this surfaces the same way as any other edge here — at high confidence when explicit, flagged to the person when it isn't.
+6. Before presenting the result, check `traverspec/graph.yaml` (per the rule in `start_here.md`) to confirm you haven't created a duplicate of something that already existed before this ingestion started, and run `traverspec validate` if it's available (per `start_here.md`) — fix anything it reports before moving on.
+7. Summarize for the person: what was written at high confidence, and the specific list of low-confidence items you need their input on. Don't bury the low-confidence flags inside a wall of otherwise-confident output — call them out clearly as a separate list.
 
 ---
 
 ## What this file does not do
 
 This file does not lower the bar for what counts as a valid node or edge — everything you produce still has to conform exactly to `structure_reference.md`. Confidence-gating governs *whether you write something now or ask first*, not *what the rules are once you do write it*.
+
+---
+
+## Custom rules
+
+Add project-specific rules or exceptions for this skill below. Everything else in this file can be overwritten when `traverspec refresh-skills` pulls in a package update — content between these two markers never is.
+
+<!-- traverspec:custom-rules:start -->
+(No custom rules yet for this project.)
+<!-- traverspec:custom-rules:end -->

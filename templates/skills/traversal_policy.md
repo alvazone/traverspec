@@ -108,3 +108,13 @@ feature:signup
 ## What this policy deliberately does not do
 
 It does not cap traversal by hop count. It does not fragment the graph into separate per-epic subgraphs to control scope. Both were considered and rejected — direction (forward-only for implement/explain tasks, reversed for impact-analysis tasks, plus the `overrides` check on every loaded node) does the job of keeping traversal scoped to what's relevant, without either of those tradeoffs. If traversal from a reasonable entry point is pulling in content that feels irrelevant, the likely cause is a miscategorized edge (something marked `depends_on` that shouldn't be), not a missing depth cap — fix the edge, don't work around it by truncating traversal.
+
+---
+
+## Custom rules
+
+Add project-specific rules or exceptions for this skill below. Everything else in this file can be overwritten when `traverspec refresh-skills` pulls in a package update — content between these two markers never is.
+
+<!-- traverspec:custom-rules:start -->
+(No custom rules yet for this project.)
+<!-- traverspec:custom-rules:end -->

@@ -75,4 +75,31 @@ describe('buildRefreshPlan / applyRefreshPlan', () => {
     applyRefreshPlan(tmpDir, plan, true);
     expect(fs.readFileSync(skillPath, 'utf8')).not.toContain('CUSTOMIZED BY USER');
   });
+
+  it('preserves custom-rules content across a refresh without needing confirmation', () => {
+    initCommand({});
+    const skillPath = path.join(tmpDir, 'traverspec', 'skills', 'structure_reference.md');
+    const original = fs.readFileSync(skillPath, 'utf8');
+    const withCustomRule = original.replace(
+      '<!-- traverspec:custom-rules:start -->\n(No custom rules yet for this project.)\n<!-- traverspec:custom-rules:end -->',
+      '<!-- traverspec:custom-rules:start -->\nAlways use snake_case for business_rule filenames on this project.\n<!-- traverspec:custom-rules:end -->'
+    );
+    expect(withCustomRule).not.toBe(original); // sanity check the replace actually matched
+    fs.writeFileSync(skillPath, withCustomRule);
+
+    const versionsPath = path.join(tmpDir, 'traverspec', 'skill-versions.json');
+    const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+    versions['structure_reference.md'] = '0.0.1'; // simulate an old stamp
+    fs.writeFileSync(versionsPath, JSON.stringify(versions));
+
+    const plan = buildRefreshPlan(tmpDir);
+    const entry = plan.entries.find((e) => e.file === 'structure_reference.md');
+    // A custom-rules-only difference should never need confirmation.
+    expect(entry?.action).toBe('stale-identical-will-restamp');
+
+    applyRefreshPlan(tmpDir, plan, false);
+    const refreshed = fs.readFileSync(skillPath, 'utf8');
+    expect(refreshed).toContain('Always use snake_case for business_rule filenames on this project.');
+    expect(refreshed).toBe(withCustomRule); // rest of the file is byte-identical to what was already there
+  });
 });

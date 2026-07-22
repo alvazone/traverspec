@@ -73,7 +73,25 @@ Edges are directed and typed. They live only in `traverspec/graph.yaml`, under t
 
 Only write a `dispatches` edge when the source node's own content explicitly states the handoff (e.g. "on completion, enqueue X" or "after this, X runs") — the same confidence-gating standard `ingest_spec.md` already applies to every other edge type. Don't infer it from two features merely occurring near each other in a workflow.
 
+This section defines what `dispatches` *means*; it says nothing about which side of it gets built first. That's a separate question with its own easy-to-get-backwards answer — see `plan.md` if you're deriving a build sequence.
+
 When authoring a new edge, pick the type that matches the actual relationship, not the closest available one. If none of these actually describe the relationship you're trying to express, stop and ask rather than force-fitting an existing type — that's a signal the schema may need to grow, not a signal to improvise.
+
+---
+
+## 3a. When a shared `data_model` implies a feature-to-feature dependency
+
+Two features can each have a `mutates`, `reads`, or `foreign_key`-chained relationship to the same `data_model` without that meaning anything about the order they need to exist in. Treat that as the default assumption — sharing a model does not, by itself, imply order.
+
+**When it's real.** One feature's own content states a fact that only makes sense once a specific value or record already exists, and a *different* feature's own content is what makes that fact true. Two shapes to watch for:
+- **Create-before-consume** — one feature plainly creates or populates the model; another deletes, updates, or meaningfully reads it, with nothing else needing to happen first.
+- **Field-mediated prerequisite** — a feature's behavior depends on a specific field or value that a different feature's own spec explicitly states it writes (e.g. "sole writer of X"), even when the two features never mention each other by name anywhere.
+
+Evidence for either can be split across the two nodes' own content — one file states the sole-writer fact, the other states the dependency on that value — as long as each half is itself explicit, not inferred. That's different from inferring a relationship from proximity; connecting two independently explicit facts is not a guess, and the resulting edge is still `depends_on`, written the same as any other.
+
+**When it isn't real.** Several features can touch the same model as independent, parallel operations on it — CRUD peers on one resource (four auth endpoints all touching the same session-token table, say) usually have no real order between them at all. Before writing an edge, check whether the feature can still function correctly *without* the other one having happened yet — a feature that reads or writes a shared entity only inside a conditional branch ("if a record of this type already exists, do Y") is describing an optional integration point, not a hard prerequisite. Only write the edge for prerequisites a feature cannot produce meaningful, correct behavior without.
+
+Apply the same confidence-gating standard as everywhere else in this file. If you're not sure whether what you read counts as explicit, it doesn't — leave it unconnected rather than guess.
 
 ---
 
@@ -283,3 +301,13 @@ reading this file.
 ## 8. If something doesn't fit
 
 If you're authoring content that doesn't map cleanly onto an existing node type, or a relationship that doesn't match an existing edge type, stop and ask the person rather than forcing it into the closest available option. A forced fit now is a harder problem to untangle later than a short pause to clarify.
+
+---
+
+## Custom rules
+
+Add project-specific rules or exceptions for this skill below. Everything else in this file can be overwritten when `traverspec refresh-skills` pulls in a package update — content between these two markers never is.
+
+<!-- traverspec:custom-rules:start -->
+(No custom rules yet for this project.)
+<!-- traverspec:custom-rules:end -->
