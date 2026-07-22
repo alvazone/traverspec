@@ -28,7 +28,7 @@ To answer "what breaks if I change `User`?", an agent walks the edges pointing a
 ## Installation
 
 ```bash
-npm install -g traverspec
+npm install -g @alvazone/traverspec
 traverspec --help
 ```
 

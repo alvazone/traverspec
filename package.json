@@ -1,8 +1,11 @@
 {
-  "name": "traverspec",
+  "name": "@alvazone/traverspec",
   "version": "0.1.0",
   "description": "Scaffold and validate a typed, traversable spec graph for AI coding agents.",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Rajath Alva <rajath@alva.zone>",
   "repository": {
     "type": "git",
