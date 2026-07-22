@@ -8,12 +8,14 @@ import { removeCommand } from './commands/remove';
 import { refreshSkillsCommand } from './commands/refreshSkills';
 import { checkPlanCommand } from './commands/checkPlan';
 
+const { version } = require('../package.json') as { version: string };
+
 const program = new Command();
 
 program
   .name('traverspec')
   .description('Scaffold and validate a typed, traversable spec graph for AI coding agents.')
-  .version('0.1.0');
+  .version(version);
 
 program
   .command('init')

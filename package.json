@@ -3,6 +3,25 @@
   "version": "0.1.0",
   "description": "Scaffold and validate a typed, traversable spec graph for AI coding agents.",
   "license": "MIT",
+  "author": "Rajath Alva <rajath@alva.zone>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alvazone/traverspec.git"
+  },
+  "homepage": "https://github.com/alvazone/traverspec#readme",
+  "bugs": {
+    "url": "https://github.com/alvazone/traverspec/issues"
+  },
+  "keywords": [
+    "cli",
+    "ai-agents",
+    "spec",
+    "spec-graph",
+    "documentation",
+    "llm",
+    "developer-tools",
+    "context-engineering"
+  ],
   "bin": {
     "traverspec": "dist/cli.js"
   },
