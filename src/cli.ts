@@ -36,7 +36,7 @@ program
 
 program
   .command('add-codeowners')
-  .description('Add a CODEOWNERS entry gating traverspec/skills/ behind review (never run automatically by init)')
+  .description('Add a CODEOWNERS entry gating traverspec/ behind review (never run automatically by init)')
   .requiredOption('--tool <platform>', 'github or gitlab')
   .action(addCodeownersCommand);
 

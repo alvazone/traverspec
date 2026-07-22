@@ -14,11 +14,11 @@ const LOCATIONS: Record<CodeownersPlatform, string[]> = {
 
 function blockContent(owner: string): string {
   return (
-    `# Spec Graph core mechanism — changes here affect how agents read\n` +
-    `# and traverse the spec. Added by \`traverspec add-codeowners\`.\n` +
+    `# TraverSpec spec graph — changes here affect both what the spec says\n` +
+    `# and how agents read and traverse it. Added by \`traverspec add-codeowners\`.\n` +
     `# Replace the placeholder below with a real team or username before this does anything —\n` +
     `# your git host won't request review from an owner handle that doesn't exist.\n` +
-    `/traverspec/skills/ ${owner}`
+    `/traverspec/ ${owner}`
   );
 }
 
@@ -31,7 +31,7 @@ export interface AddCodeownersResult {
  * Finds the CODEOWNERS file the target platform actually honors (checking
  * all recognized locations in precedence order, since both platforms
  * silently ignore every location but the first one found), and appends or
- * creates a marked block pointing at traverspec/skills/. Never overwrites
+ * creates a marked block pointing at traverspec/. Never overwrites
  * unrelated existing content in the file.
  */
 export function addCodeowners(root: string, platform: CodeownersPlatform, owner = '@CHANGE_ME'): AddCodeownersResult {

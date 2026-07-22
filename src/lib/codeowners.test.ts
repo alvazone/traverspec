@@ -40,7 +40,7 @@ describe('addCodeowners — github', () => {
     expect(result.filePath).toBe('CODEOWNERS');
     const content = fs.readFileSync(path.join(tmpDir, 'CODEOWNERS'), 'utf8');
     expect(content).toContain('*.tf @infra-team');
-    expect(content).toContain('/traverspec/skills/ @CHANGE_ME');
+    expect(content).toContain('/traverspec/ @CHANGE_ME');
   });
 
   it('every non-blank line in the injected block is a valid CODEOWNERS comment or rule', () => {

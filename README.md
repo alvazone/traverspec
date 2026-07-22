@@ -87,14 +87,14 @@ This additionally writes `CLAUDE.md` (a one-line import of `AGENTS.md`).
 | `traverspec validate [--json]` | Structural and referential integrity check. Non-zero exit on any issue. |
 | `traverspec check-plan [--json]` | Check whether `traverspec/plan/plan.md` still matches the current `graph.yaml`, or is stale. |
 | `traverspec refresh-skills [--yes]` | Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file. |
-| `traverspec add-codeowners --tool <github\|gitlab>` | Gate changes to `traverspec/skills/` behind review. Never run automatically, opt-in since solo projects don't need it. |
+| `traverspec add-codeowners --tool <github\|gitlab>` | Gate changes to `traverspec/` behind review. Never run automatically, opt-in since solo projects don't need it. |
 | `traverspec remove [--yes]` | Remove `traverspec/` and agent entry files from this project, after a confirmation prompt. `--yes` skips it for scripted use. |
 
 ## Versioning
 
 Everything TraverSpec creates lives in your repo as plain text: `graph.yaml`, the per-node markdown files under `traverspec/assets/`, and the skill files under `traverspec/skills/`. There's no separate database or hosted service to keep in sync, so history, diffs, blame, and branching all come from git the same as any other source file.
 
-To control who can change the graph-traversal mechanism itself, run `traverspec add-codeowners --tool github` (or `--tool gitlab`). This adds a CODEOWNERS entry scoping `traverspec/skills/` to an owner you specify, replacing the `@CHANGE_ME` placeholder it writes. On its own this only requests review, it doesn't block merges. To actually enforce it, enable your git host's branch protection on top: GitHub's "Require review from Code Owners", or an equivalent approval rule tied to a protected branch on GitLab.
+To control who can change the spec itself, run `traverspec add-codeowners --tool github` (or `--tool gitlab`). This adds a CODEOWNERS entry scoping the entire `traverspec/` folder, graph content and skill files alike, to an owner you specify, replacing the `@CHANGE_ME` placeholder it writes. On its own this only requests review, it doesn't block merges. To actually enforce it, enable your git host's branch protection on top: GitHub's "Require review from Code Owners", or an equivalent approval rule tied to a protected branch on GitLab.
 
 ## Skill files
 
