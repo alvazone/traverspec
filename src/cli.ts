@@ -7,6 +7,8 @@ import { addCodeownersCommand } from './commands/addCodeowners';
 import { removeCommand } from './commands/remove';
 import { refreshSkillsCommand } from './commands/refreshSkills';
 import { checkPlanCommand } from './commands/checkPlan';
+import { listCommand } from './commands/list';
+import { showCommand } from './commands/show';
 
 const { version } = require('../package.json') as { version: string };
 
@@ -28,6 +30,20 @@ program
   .description('Check traverspec/graph.yaml and skill files for structural and referential integrity')
   .option('--json', 'output machine-readable JSON instead of a human-readable report')
   .action(validateCommand);
+
+program
+  .command('list')
+  .description('List every node with a lightweight id/type/title/description index, for resolving a node id before using show')
+  .option('--type <type>', 'filter to one node type')
+  .option('--json', 'output machine-readable JSON instead of a human-readable list')
+  .action(listCommand);
+
+program
+  .command('show <node_ids>')
+  .description('Show the dependency/impact closure for one or more node ids (comma-separated)')
+  .option('--direction <direction>', "forward, reverse, or both (default: both)", 'both')
+  .option('--json', 'output machine-readable JSON instead of a human-readable edge list')
+  .action(showCommand);
 
 program
   .command('add-agent <names>')

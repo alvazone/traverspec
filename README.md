@@ -85,6 +85,8 @@ This additionally writes `CLAUDE.md` (a one-line import of `AGENTS.md`).
 | `traverspec init [--agent <names>]` | Scaffold `traverspec/` and wire up agent entry files. Idempotent. |
 | `traverspec add-agent <names>` | Wire up an additional tool later without re-scaffolding (`cursor`, `claude`). |
 | `traverspec validate [--json]` | Structural and referential integrity check. Non-zero exit on any issue. |
+| `traverspec list [--type <type>] [--json]` | Lightweight id/type/title/description index of every node, for resolving a node id before using `show`. |
+| `traverspec show <node_id>[,<node_id>...] [--direction forward\|reverse\|both] [--json]` | Dependency/impact closure for one or more nodes, grouped by level (hop distance) as `graph.yaml`-shaped edges. Direction defaults to `both`. |
 | `traverspec check-plan [--json]` | Check whether `traverspec/plan/plan.md` still matches the current `graph.yaml`, or is stale. |
 | `traverspec refresh-skills [--yes]` | Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file. |
 | `traverspec add-codeowners --tool <github\|gitlab>` | Gate changes to `traverspec/` behind review. Never run automatically, opt-in since solo projects don't need it. |
