@@ -16,13 +16,17 @@ This is different from `traverspec/constitution.md`, which `traversal_policy.md`
 
 ---
 
-## The one rule that always applies
+## Rules that always apply
 
 **Before creating any new node (feature, data_model, api_contract, business_rule, decision, epic, or optional types), check `traverspec/graph.yaml` first to see if it already exists.**
 
 This is not optional and does not depend on which task below you're routed to. Creating a duplicate node — a second `data_model:User`, a second `feature:checkout` — silently fractures the graph: some edges will point at one copy, some at the other, and nothing will detect the split. If you're ever about to write a new asset file, your first action is always a check against `traverspec/graph.yaml`, not a search of your own memory of the conversation.
 
 If something looks like it should exist but doesn't, that's fine — create it. This rule is about checking, not about hesitating.
+
+**If a conversation reaches a concluded, finalized change to what the spec should say, propose updating the spec before considering the task done.** This applies regardless of which task routed you here, not just when the task itself is spec authoring — implementation conversations settle real decisions too. A new business rule, a changed behavior, an exception someone just stated as decided rather than still being worked out, that's spec-worthy the moment it's settled, not something to leave for a future pass. Don't let it happen only in the routing case built for it (`author_via_chat.md`'s handling of decisions surfacing mid-conversation) — the same instinct applies everywhere.
+
+Ask the person first; don't edit `traverspec/graph.yaml` or `assets/` on an assumption that a change is wanted. This is a separate gate from CODEOWNERS: CODEOWNERS (if configured, see the main README) controls whether an already-made edit can be merged, this is about whether the agent proposes making the edit at all. Getting a yes here doesn't bypass CODEOWNERS review, and CODEOWNERS review isn't a substitute for asking here.
 
 ---
 
