@@ -20,7 +20,7 @@ This is different from `traverspec/constitution.md`, which `traversal_policy.md`
 
 **Before creating any new node (feature, data_model, api_contract, business_rule, decision, epic, or optional types), check `traverspec/graph.yaml` first to see if it already exists.**
 
-This is not optional and does not depend on which task below you're routed to. Creating a duplicate node — a second `data_model:User`, a second `feature:checkout` — silently fractures the graph: some edges will point at one copy, some at the other, and nothing will detect the split. If you're ever about to write a new asset file, your first action is always a check against `traverspec/graph.yaml`, not a search of your own memory of the conversation.
+This is not optional and does not depend on which task below you're routed to. Creating a duplicate node — a second `data_model:User`, a second `feature:checkout` — silently fractures the graph: some edges will point at one copy, some at the other, and nothing will detect the split. If you're ever about to write a new asset file, your first action is always a check against `traverspec/graph.yaml`, not a search of your own memory of the conversation. If the `traverspec` CLI is available, `traverspec list` (optionally `--type <type>`) is the faster, more reliable way to do this check, see `traversal_policy.md`.
 
 If something looks like it should exist but doesn't, that's fine — create it. This rule is about checking, not about hesitating.
 
@@ -32,7 +32,7 @@ Ask the person first; don't edit `traverspec/graph.yaml` or `assets/` on an assu
 
 ## Validate after writing, if the tool is available
 
-If this project has the `traverspec` CLI available — check for a `traverspec` command, or a `traverspec/` folder at the project root — run `traverspec validate` after writing or editing anything in `traverspec/graph.yaml` or `traverspec/assets/`, before considering the task finished. It mechanically catches structural mistakes (a dangling reference, an illegal edge type, a malformed entry, a missing skill file) the moment they happen, rather than leaving them to surface later as confusing or silently wrong behavior. If it reports issues, fix them before presenting your work as done — a failing validate result is not something to note and move past.
+If this project has the `traverspec` CLI available — check for a `traverspec` command, or a `traverspec/` folder at the project root — run `traverspec validate` after writing or editing anything in `traverspec/graph.yaml` or `traverspec/assets/`, before considering the task finished. It mechanically catches structural mistakes (a dangling reference, an illegal edge type, a malformed entry, a blank asset file, a missing skill file) the moment they happen, rather than leaving them to surface later as confusing or silently wrong behavior. If it reports issues, fix them before presenting your work as done — a failing validate result is not something to note and move past.
 
 If `traverspec` isn't available in this project, skip this step; its absence is not an error.
 

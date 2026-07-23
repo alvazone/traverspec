@@ -10,7 +10,7 @@ This is not a mechanical computation you can fully get right from `graph.yaml` a
 
 The person is asking for a build order, a roadmap, a sequencing plan, "what should we build first," or anything phrased in terms of stages/sprints/waves across some or all of the `feature` nodes in the graph. Read `structure_reference.md` first if you haven't already this session — everything below assumes you know the node/edge schema.
 
-If `traverspec/plan/plan.md` already exists, don't assume it's still accurate — run `traverspec check-plan` if the CLI is available (per `start_here.md`'s convention for checking tool availability). A `stale` result means the graph has moved since that plan was generated; redo Steps 1–2 below rather than presenting the existing file as current. An `up-to-date` result means the existing plan is still trustworthy and there's no need to redo the work from scratch.
+If `traverspec/plan/plan.md` already exists, don't assume it's still accurate — run `traverspec check-plan` if the CLI is available (per `start_here.md`'s convention for checking tool availability). A `stale` result means the graph has moved since that plan was generated; redo Steps 1–2 below rather than presenting the existing file as current. An `up-to-date` result means the existing plan is still trustworthy and there's no need to redo the work from scratch. A `no-plan` result (the snapshot file is missing even though `plan.md` itself exists, e.g. it was copied or hand-created without it) means there's nothing to trust either, treat it the same as `stale` and redo Steps 1–2.
 
 ---
 

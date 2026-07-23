@@ -16,6 +16,7 @@ export const REQUIRED_SKILL_FILES = [
   'ingest_spec.md',
   'author_via_chat.md',
   'derive_spec_from_code.md',
+  'plan.md',
 ];
 
 function isScalar(value: unknown): boolean {

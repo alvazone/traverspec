@@ -30,7 +30,7 @@ These aren't scripts — they're the *kind* of gap you're listening for per node
 
 **feature** — What does this actually do, and who or what triggers it? What should explicitly NOT happen (scope boundaries are often clearer once stated than left implicit)? What would prove it's working correctly — this feeds the Acceptance Criteria section directly, so ask for concrete, checkable conditions, not vague ones.
 
-**data_model** — What fields does this actually need, and which are required vs. optional? Does this reference or depend on anything else that already exists in the graph — check `traverspec/graph.yaml`, then ask about anything that seems like it should connect but doesn't yet.
+**data_model** — What fields does this actually need, and which are required vs. optional? Does this reference or depend on anything else that already exists in the graph — check `traverspec/graph.yaml` (or `traverspec list` if the CLI is available), then ask about anything that seems like it should connect but doesn't yet.
 
 **api_contract** — What's the exact trigger — method, path, or operation name? What does success return, and what should fail conditions look like? People often describe the happy path fluently but skip errors — explicitly prompt for what should happen when it doesn't work, since that section is easy to leave thin otherwise.
 
@@ -58,7 +58,7 @@ While you're at it, check the new feature's `mutates`/`reads`/`foreign_key` edge
 
 ## Before finishing
 
-Same as ingestion: check `traverspec/graph.yaml` before creating anything (per `start_here.md`), and don't create a second node for something that already exists under a slightly different name — if what the person is describing sounds close to something already in the graph, surface that rather than assuming it's new. Run `traverspec validate` if it's available before considering the node finished, same as `start_here.md` describes — fix anything it reports rather than leaving it for later.
+Same as ingestion: check `traverspec/graph.yaml` (or `traverspec list` if the CLI is available) before creating anything (per `start_here.md`), and don't create a second node for something that already exists under a slightly different name — if what the person is describing sounds close to something already in the graph, surface that rather than assuming it's new. Run `traverspec validate` if it's available before considering the node finished, same as `start_here.md` describes — fix anything it reports rather than leaving it for later.
 
 ---
 

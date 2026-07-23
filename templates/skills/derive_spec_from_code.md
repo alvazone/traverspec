@@ -8,7 +8,7 @@ This assumes you've already read `structure_reference.md`. Everything you write 
 
 ## First: are you generating or reconciling?
 
-Per `start_here.md`'s standing rule, check `traverspec/graph.yaml` before writing anything. That check tells you which mode you're in for the area of code you're looking at:
+Per `start_here.md`'s standing rule, check `traverspec/graph.yaml` (or `traverspec list` if the CLI is available) before writing anything. That check tells you which mode you're in for the area of code you're looking at:
 
 - **No existing nodes cover this code** → you're generating from scratch. Go to "Generating from scratch" below.
 - **Nodes already exist for this area** → you're reconciling — checking whether the graph still matches what the code actually does. Go to "Reconciling against existing nodes" below.
@@ -92,7 +92,7 @@ When a node already exists for the code you're reading, the task changes from *c
 
 ## Before finishing
 
-Check `traverspec/graph.yaml` once more before presenting results, same as the other authoring skills — confirm nothing you're about to add duplicates something that already exists under a different name. As part of that check, also look for the shared-`data_model` dependency case `structure_reference.md` §3a describes: any other feature touching a `data_model` you just added edges to. This is usually cheaper to resolve from code than from prose — "who else writes this field" is often a direct grep for the assignment, not something you have to hold in memory across files. Run `traverspec validate` if it's available (per `start_here.md`) and fix anything it reports — note that it checks structure only, so a clean pass doesn't substitute for the confidence-gating judgment above; it catches a malformed edge, not a canonized bug. Summarize for the person in three groups, not one undifferentiated list: what was written at high confidence, what's flagged as "found in code, unclear if intentional" and needs a human call, and — if you were reconciling — what drift was found and which side needs a decision.
+Check `traverspec/graph.yaml` (or `traverspec list`) once more before presenting results, same as the other authoring skills — confirm nothing you're about to add duplicates something that already exists under a different name. As part of that check, also look for the shared-`data_model` dependency case `structure_reference.md` §3a describes: any other feature touching a `data_model` you just added edges to. This is usually cheaper to resolve from code than from prose — "who else writes this field" is often a direct grep for the assignment, not something you have to hold in memory across files. Run `traverspec validate` if it's available (per `start_here.md`) and fix anything it reports — note that it checks structure only, so a clean pass doesn't substitute for the confidence-gating judgment above; it catches a malformed edge, not a canonized bug. Summarize for the person in three groups, not one undifferentiated list: what was written at high confidence, what's flagged as "found in code, unclear if intentional" and needs a human call, and — if you were reconciling — what drift was found and which side needs a decision.
 
 ---
 

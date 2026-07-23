@@ -64,7 +64,7 @@ Edges are directed and typed. They live only in `traverspec/graph.yaml`, under t
 | `overrides` | The `from` node is a documented, intentional exception to the `to` node. | decision → business_rule |
 | `dispatches` | The `from` node's completion causes the `to` node to run — asynchronously, out of band, not within the same request/response cycle. | feature → feature |
 
-`overrides` is the one edge type with special traversal behavior — always checked, in both directions, regardless of entry point. See Section 4 in `traversal_policy.md` for why.
+`overrides` is the one edge type with special traversal behavior — always checked, in both directions, regardless of entry point. See Step 3 in `traversal_policy.md` for why.
 
 **`dispatches` vs `depends_on` vs `triggers`.** These three can look similar between two features and are easy to conflate — pick based on what kind of fact is actually being stated, not on which one "sounds close enough":
 - `depends_on` — a static prerequisite: the `from` node cannot be understood or implemented without the `to` node already existing. No claim about runtime ordering or causation.
@@ -165,7 +165,8 @@ traverspec/
 │   ├── traversal_policy.md
 │   ├── ingest_spec.md
 │   ├── author_via_chat.md
-│   └── derive_spec_from_code.md
+│   ├── derive_spec_from_code.md
+│   └── plan.md
 └── assets/
     ├── epic/
     ├── feature/

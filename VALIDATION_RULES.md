@@ -42,7 +42,7 @@ Every `overrides` edge must have `from` of type `decision` and `to` of type `bus
 
 ## 6. Skill-file presence
 
-The installed package bundles a pristine reference copy of the required skill files (`start_here.md`, `structure_reference.md`, `traversal_policy.md`, `ingest_spec.md`, `author_via_chat.md`, `derive_spec_from_code.md`). `validate` checks that all six exist under `traverspec/skills/` in the project being validated. A missing file is a hard fail.
+The installed package bundles a pristine reference copy of the required skill files (`start_here.md`, `structure_reference.md`, `traversal_policy.md`, `ingest_spec.md`, `author_via_chat.md`, `derive_spec_from_code.md`, `plan.md`). `validate` checks that all seven exist under `traverspec/skills/` in the project being validated. A missing file is a hard fail.
 
 **Content differences from the pristine copy are never flagged.** Per-project customization of these files is expected and encouraged — this check only catches outright deletion or a file never having been scaffolded, not divergence in wording.
 
