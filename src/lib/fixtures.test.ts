@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import { checkReferentialIntegrity, checkSkillFilesPresent } from './rules';
+import { checkReferentialIntegrity, checkAssetContentPresence, checkSkillFilesPresent } from './rules';
 
 const FIXTURES_ROOT = path.join(__dirname, '..', '..', 'test-fixtures');
 
@@ -50,6 +50,35 @@ describe('checkReferentialIntegrity against real fixture projects', () => {
     };
     const findings = checkReferentialIntegrity(raw, specRoot);
     expect(findings.some((f) => f.message.includes("path 'assets/feature/ghost.md' does not exist"))).toBe(true);
+  });
+});
+
+describe('checkAssetContentPresence against real fixture projects', () => {
+  it('valid-project has no blank assets', () => {
+    const { raw, specRoot } = loadFixtureGraph('valid-project');
+    expect(checkAssetContentPresence(raw, specRoot)).toEqual([]);
+  });
+
+  it('flags a completely empty asset file', () => {
+    const { raw, specRoot } = loadFixtureGraph('blank-asset-project');
+    const findings = checkAssetContentPresence(raw, specRoot);
+    expect(findings.some((f) => f.message.includes("node 'data_model:Order' asset file 'assets/data_model/Order.md' is blank"))).toBe(true);
+  });
+
+  it('flags a whitespace-only asset file', () => {
+    const { raw, specRoot } = loadFixtureGraph('blank-asset-project');
+    const findings = checkAssetContentPresence(raw, specRoot);
+    expect(findings.some((f) => f.message.includes("node 'feature:checkout' asset file 'assets/feature/checkout.md' is blank"))).toBe(true);
+  });
+
+  it('does not double-report a node whose path does not exist on disk at all', () => {
+    const { specRoot } = loadFixtureGraph('valid-project');
+    const raw = {
+      epics: [],
+      nodes: [{ id: 'feature:ghost', type: 'feature', path: 'assets/feature/ghost.md' }],
+      edges: [],
+    };
+    expect(checkAssetContentPresence(raw, specRoot)).toEqual([]);
   });
 });
 

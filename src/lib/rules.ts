@@ -166,6 +166,23 @@ export function checkReferentialIntegrity(raw: any, specRoot: string): Finding[]
   return findings;
 }
 
+export function checkAssetContentPresence(raw: any, specRoot: string): Finding[] {
+  const findings: Finding[] = [];
+  for (const entry of [...(raw.epics || []), ...(raw.nodes || [])]) {
+    if (!entry.path) continue;
+    const fullPath = path.join(specRoot, entry.path);
+    if (!fs.existsSync(fullPath)) continue; // already reported by checkReferentialIntegrity
+    const content = fs.readFileSync(fullPath, 'utf8');
+    if (content.trim().length === 0) {
+      findings.push({
+        rule: 'asset-content-presence',
+        message: `node '${entry.id}' asset file '${entry.path}' is blank`,
+      });
+    }
+  }
+  return findings;
+}
+
 export function checkOverridesDirection(raw: any): Finding[] {
   const findings: Finding[] = [];
   const nodeTypeById = new Map<string, string>();
