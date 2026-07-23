@@ -114,18 +114,17 @@ To control who can change the spec itself, run `traverspec add-codeowners --tool
 
 ## VS Code extension
 
-[traverspec-vscode](https://github.com/alvazone/traverspec-vscode) renders `graph.yaml` as an interactive, explorable node diagram inside VS Code, for browsing the graph visually instead of jumping between files. Not yet published to the VS Code Marketplace; clone and run it from source in the meantime.
+[TraverSpec Graph Explorer](https://marketplace.visualstudio.com/items?itemName=alvazone.traverspec-vscode) renders `graph.yaml` as an interactive, explorable node diagram inside VS Code, for browsing the graph visually instead of jumping between files. Install it from the Marketplace, or see the [source repo](https://github.com/alvazone/traverspec-vscode).
 
 ## Known limitations
 
 - **Context-scoping only pays off past a real size threshold.** On a small graph, reading everything is cheaper than the fixed cost of an agent learning the routing rules.
-- **`depends_on` chains can pull in a large share of the graph for a single task.** If a feature sits downstream of a long prerequisite chain, "implement this feature" can legitimately require most of the graph. That reflects real coupling in the underlying product, not a bug in the tool, but it means minimal context isn't a guaranteed property of using a graph.
+- **Large result sets reflect real coupling, not a bug.** A `depends_on` chain, or a heavily-referenced `data_model` with many `foreign_key`/`mutates`/`reads` edges into it, can legitimately pull in most of the graph for a single task, `data_model:User`'s reverse closure on a real 180-node graph covered 65 nodes. Minimal context isn't a guaranteed property of using a graph, it's a property of how coupled the underlying product actually is.
 - **`validate` checks structural and referential integrity, not semantic accuracy.** Every id can resolve and every edge type can be legal while an edge no longer reflects what the code actually does. Catching that requires the review process in `derive_spec_from_code.md`, not a mechanical check.
-- **Monorepo support isn't implemented yet.** A single `traverspec/graph.yaml` per repo is assumed; multiple graphs in one repository (Turborepo-style) isn't supported.
 
 ## Status
 
-`0.1.0`, pre-1.0. Following semver, but expect the CLI surface and skill file content to still change between minor versions until a 1.0 release.
+`0.2.0`, pre-1.0. Following semver, but expect the CLI surface and skill file content to still change between minor versions until a 1.0 release.
 
 ## License
 

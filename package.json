@@ -1,6 +1,6 @@
 {
   "name": "@alvazone/traverspec",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scaffold and validate a typed, traversable spec graph for AI coding agents.",
   "license": "MIT",
   "publishConfig": {
