@@ -16,6 +16,12 @@ This is different from `traverspec/constitution.md`, which `traversal_policy.md`
 
 ---
 
+## Check whether the CLI is actually installed, once per session
+
+`traverspec/` existing as a folder doesn't mean the `traverspec` command is available — check both separately, don't assume one implies the other. If the folder exists but the command doesn't, mention it to the person once this session: without the CLI, `list`, `show`, and `validate` all fall back to reading `graph.yaml` and its assets by hand for everything those commands would otherwise do mechanically and exhaustively, which is slower and easier to get wrong on anything but a small graph. Suggest installing it, `npm install --save-dev @alvazone/traverspec` if this looks like a Node project (a `package.json` exists at the root), or a global install otherwise, per the README. Say it once, then continue the session either way, with the manual fallback if it's still not available afterward — don't repeat the suggestion again later in the same session.
+
+---
+
 ## Rules that always apply
 
 Four things always apply here, no matter which task below you're routed to:

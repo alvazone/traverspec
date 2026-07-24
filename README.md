@@ -27,12 +27,21 @@ To answer "what breaks if I change `User`?", an agent walks the edges pointing a
 
 ## Installation
 
+If the project you're adding this to is itself a Node project (it has a `package.json`), install it as a dev dependency, the same way you would `eslint` or `typescript` — it's never imported by application code, only run as a CLI, so it belongs in `devDependencies`, not a global install. This also pins the version in `package-lock.json`, so every contributor and every CI run uses the same one:
+
+```bash
+npm install --save-dev @alvazone/traverspec
+npx traverspec --help
+```
+
+If the target project isn't a Node project at all, or you just want it available everywhere without pinning it per-project, install it globally instead:
+
 ```bash
 npm install -g @alvazone/traverspec
 traverspec --help
 ```
 
-If `--help` prints the command list, the install worked.
+Either way, if `--help` prints the command list, the install worked.
 
 ## Quickstart
 
