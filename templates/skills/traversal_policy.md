@@ -16,7 +16,9 @@ If `traverspec/constitution.md` doesn't exist, skip this step and continue. Its 
 
 ## Step 1 — Resolve the entry point
 
-Figure out which node the task is actually about, and enter the graph there. Entry points are resolved directly — by matching the task against node names and ids in `traverspec/graph.yaml` — not by starting at an epic and working your way in.
+Figure out which node the task is actually about, and enter the graph there. Entry points are resolved directly — by matching the task against node names and ids — not by starting at an epic and working your way in.
+
+If the `traverspec` CLI is available, run `traverspec list` (optionally `--type <type>` to narrow it) to do this instead of reading `traverspec/graph.yaml` directly. It returns a compact id/title/description index built for exactly this, cheaper and more reliable than parsing the raw file by eye.
 
 - "Implement checkout" → entry point is `feature:checkout`.
 - "Why does the refund endpoint fail on weekends" → entry point is the relevant `api_contract` node.
@@ -24,9 +26,7 @@ Figure out which node the task is actually about, and enter the graph there. Ent
 
 Any node type can be an entry point. There is no requirement to resolve through an `epic` first, even if the task mentions one — epics are for filtering, not for gating access to the rest of the graph (see `structure_reference.md`, Section 4).
 
-If nothing in `traverspec/graph.yaml` matches what the task is describing, say so — don't guess at the nearest-sounding node and proceed as if it were confirmed.
-
-If the `traverspec` CLI is available, run `traverspec list` (optionally `--type <type>` to narrow it) instead of reading `graph.yaml` directly to resolve this. It returns a compact id/title/description index built for exactly this, cheaper and more reliable than parsing the raw file by eye.
+If nothing matches what the task is describing, say so — don't guess at the nearest-sounding node and proceed as if it were confirmed.
 
 ### When more than one node matches
 

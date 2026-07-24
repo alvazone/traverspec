@@ -40,7 +40,7 @@ If `--help` prints the command list, the install worked.
 traverspec init
 ```
 
-Scaffolds the `traverspec/` folder (`about.md`, `constitution.md`, `graph.yaml`, `assets/`, and the seven skill files under `skills/`) and adds or updates `AGENTS.md`, read natively by Cursor and most other agentic tools. Safe to run again: existing content is never overwritten, only appended to inside a clearly marked block.
+Scaffolds the `traverspec/` folder (`about.md`, `constitution.md`, `graph.yaml`, `assets/`, and the eight skill files under `skills/`) and adds or updates `AGENTS.md`, read natively by Cursor and most other agentic tools. Safe to run again: existing content is never overwritten, only appended to inside a clearly marked block.
 
 For tools that don't read `AGENTS.md` on their own, like Claude Code, wire up their entry file with `--agent`:
 
@@ -90,6 +90,8 @@ This additionally writes `CLAUDE.md` (a one-line import of `AGENTS.md`).
 | `traverspec check-plan [--json]` | Check whether `traverspec/plan/plan.md` still matches the current `graph.yaml`, or is stale. |
 | `traverspec refresh-skills [--yes]` | Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file. |
 | `traverspec add-codeowners --tool <github\|gitlab>` | Gate changes to `traverspec/` behind review. Never run automatically, opt-in since solo projects don't need it. |
+| `traverspec add-hooks <cursor\|claude>` | Wire up an opt-in nudge to run `reconcile.md` after editing code, before finishing a turn. Merges into any existing hooks config for that tool, never overwrites it. Requires `jq`. |
+| `traverspec remove-hooks <cursor\|claude>` | Remove only the hook entries `add-hooks` added, leaving any other hooks in that same config untouched. |
 | `traverspec remove [--yes]` | Remove `traverspec/` and agent entry files from this project, after a confirmation prompt. `--yes` skips it for scripted use. |
 
 ## Versioning
@@ -100,7 +102,7 @@ To control who can change the spec itself, run `traverspec add-codeowners --tool
 
 ## Skill files
 
-`init` copies seven markdown files into `traverspec/skills/`. They're what an agent reads to work inside the graph correctly, and they're yours to edit once scaffolded.
+`init` copies eight markdown files into `traverspec/skills/`. They're what an agent reads to work inside the graph correctly, and they're yours to edit once scaffolded.
 
 | File | Purpose |
 |---|---|
@@ -108,7 +110,8 @@ To control who can change the spec itself, run `traverspec add-codeowners --tool
 | `structure_reference.md` | Defines the node and edge types, file layout, and content schema. What things are, not how to move between them. |
 | `traversal_policy.md` | How to gather context for a task: resolving an entry point, forward vs. reverse traversal, and the `constitution.md`/`overrides` exceptions to forward-only traversal. |
 | `ingest_spec.md` | Converting an existing document (a PDF, a Notion export, pasted notes) into the graph. |
-| `derive_spec_from_code.md` | Generating or reconciling the graph against an existing codebase, when the source of truth is code rather than a document. |
+| `derive_spec_from_code.md` | Generating the graph, or reconciling it wholesale, against a codebase that isn't mapped into the graph yet. |
+| `reconcile.md` | Checking existing nodes against existing code, on demand, scoped to one entry point at a time — narrower and more frequent than a full `derive_spec_from_code.md` pass. |
 | `author_via_chat.md` | Building a spec through conversation, when the information only exists in someone's head and hasn't been written down anywhere yet. |
 | `plan.md` | Deriving a dependency-ordered build plan (features grouped into sequential waves) from the graph's edges plus prose in `traverspec/assets/`. |
 
@@ -120,7 +123,8 @@ To control who can change the spec itself, run `traverspec add-codeowners --tool
 
 - **Context-scoping only pays off past a real size threshold.** On a small graph, reading everything is cheaper than the fixed cost of an agent learning the routing rules.
 - **Large result sets reflect real coupling, not a bug.** A `depends_on` chain, or a heavily-referenced `data_model` with many `foreign_key`/`mutates`/`reads` edges into it, can legitimately pull in most of the graph for a single task, `data_model:User`'s reverse closure on a real 180-node graph covered 65 nodes. Minimal context isn't a guaranteed property of using a graph, it's a property of how coupled the underlying product actually is.
-- **`validate` checks structural and referential integrity, not semantic accuracy.** Every id can resolve and every edge type can be legal while an edge no longer reflects what the code actually does. Catching that requires the review process in `derive_spec_from_code.md`, not a mechanical check.
+- **`validate` checks structural and referential integrity, not semantic accuracy.** Every id can resolve and every edge type can be legal while an edge no longer reflects what the code actually does. Catching that requires the review process in `reconcile.md` (or `derive_spec_from_code.md` when generating from scratch), not a mechanical check.
+- **Nothing detects on its own when the spec has drifted from the code, unless you opt into `add-hooks`.** That's a direct consequence of staying zero runtime: there's no process watching your codebase by default. `traverspec add-hooks <cursor|claude>` adds a per-project, per-tool nudge after code gets edited, but it only ever tells an agent to go check `reconcile.md`, it can't verify the check was done well, or done at all if the hook was never set up. Running reconciliation periodically is still ultimately a deliberate choice you or your agent make, the hook lowers how often that choice gets forgotten, it doesn't remove the choice.
 
 ## Status
 

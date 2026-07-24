@@ -9,6 +9,8 @@ import { refreshSkillsCommand } from './commands/refreshSkills';
 import { checkPlanCommand } from './commands/checkPlan';
 import { listCommand } from './commands/list';
 import { showCommand } from './commands/show';
+import { addHooksCommand } from './commands/addHooks';
+import { removeHooksCommand } from './commands/removeHooks';
 
 const { version } = require('../package.json') as { version: string };
 
@@ -73,5 +75,19 @@ program
   .description('Check whether traverspec/plan/plan.md still matches the current graph.yaml, or is stale')
   .option('--json', 'output machine-readable JSON instead of a human-readable report')
   .action(checkPlanCommand);
+
+program
+  .command('add-hooks <tool>')
+  .description(
+    'Wire up reconciliation hooks for an agent tool (cursor or claude) — opt-in, merges into any existing hooks config, never run automatically'
+  )
+  .action(addHooksCommand);
+
+program
+  .command('remove-hooks <tool>')
+  .description(
+    "Remove only TraverSpec's own reconciliation hook entries for an agent tool (cursor or claude), leaving any other existing hooks untouched"
+  )
+  .action(removeHooksCommand);
 
 program.parseAsync();

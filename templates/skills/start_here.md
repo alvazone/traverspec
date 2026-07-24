@@ -18,11 +18,22 @@ This is different from `traverspec/constitution.md`, which `traversal_policy.md`
 
 ## Rules that always apply
 
+Four things always apply here, no matter which task below you're routed to:
+
+1. Check `graph.yaml` before creating any new node.
+2. Verify before stating what a file, function, command, or graph entry contains — don't answer from memory.
+3. Propose a spec update the moment a conversation settles something the spec should say.
+4. Ask before editing `graph.yaml` or `assets/` — never assume a change is wanted.
+
+Details on each below.
+
 **Before creating any new node (feature, data_model, api_contract, business_rule, decision, epic, or optional types), check `traverspec/graph.yaml` first to see if it already exists.**
 
 This is not optional and does not depend on which task below you're routed to. Creating a duplicate node — a second `data_model:User`, a second `feature:checkout` — silently fractures the graph: some edges will point at one copy, some at the other, and nothing will detect the split. If you're ever about to write a new asset file, your first action is always a check against `traverspec/graph.yaml`, not a search of your own memory of the conversation. If the `traverspec` CLI is available, `traverspec list` (optionally `--type <type>`) is the faster, more reliable way to do this check, see `traversal_policy.md`.
 
 If something looks like it should exist but doesn't, that's fine — create it. This rule is about checking, not about hesitating.
+
+**Before stating what any file, function, command, or graph entry actually contains or does, verify it in this session — read the file, run the command, or check `graph.yaml` — rather than answering from memory or assumption, even when you're confident you already know.** This applies everywhere, not only before creating a node: explaining how something works, answering a question about behavior, describing what a command does, making a claim mid-conversation. Confidence is not evidence. If you haven't opened it in this session, you don't know it yet, you're recalling it, and recall can be wrong or stale. Check first, then answer.
 
 **If a conversation reaches a concluded, finalized change to what the spec should say, propose updating the spec before considering the task done.** This applies regardless of which task routed you here, not just when the task itself is spec authoring — implementation conversations settle real decisions too. A new business rule, a changed behavior, an exception someone just stated as decided rather than still being worked out, that's spec-worthy the moment it's settled, not something to leave for a future pass. Don't let it happen only in the routing case built for it (`author_via_chat.md`'s handling of decisions surfacing mid-conversation) — the same instinct applies everywhere.
 
@@ -45,6 +56,9 @@ Read the routing file(s) below that match what you're about to do. If a task spa
 **I'm implementing, modifying, or answering a question about existing code or behavior.**
 → Read `traversal_policy.md`. It tells you how to find the entry point and gather exactly the context you need — no more, no less.
 → You will also need `structure_reference.md` to understand what the content of each node type means once you've loaded it. Read both.
+
+**I'm checking whether the spec still matches the code** — the person asked me to reconcile, or it's a good moment to check before starting new work.
+→ Read `traversal_policy.md`, then `reconcile.md`.
 
 **I'm writing or updating a spec node directly** (the person is telling you what should exist, in plain terms — "add a business rule that says X").
 → Read `structure_reference.md`. It defines valid node types, edge types, file schema, naming, and folder layout.
