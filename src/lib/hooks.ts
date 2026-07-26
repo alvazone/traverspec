@@ -1,15 +1,28 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { assertPathContained } from './pathSafety';
 
 export type HookTool = 'cursor' | 'claude';
 export const KNOWN_HOOK_TOOLS: HookTool[] = ['cursor', 'claude'];
 
 const TEMPLATES_HOOKS_DIR = path.join(__dirname, '..', '..', 'templates', 'hooks');
 
+// The state-file prefix TraverSpec's own Claude Code hook scripts use inside
+// the shared .claude/hooks/ directory. Namespaced specifically to this tool
+// (not just "state-") because that directory isn't exclusively ours — other
+// tools' hooks can live there too, and cleanup needs to be able to tell its
+// own files apart from theirs without guessing.
+export const CLAUDE_STATE_FILE_PREFIX = 'traverspec-state-';
+
 interface HookScriptSpec {
   templateFile: string;
   destRelative: string;
+  /** The exact command string this tool's hook config references the script by. */
+  command: string;
+  event: string;
+  /** Claude Code's PostToolUse/Stop blocks are matcher-scoped; Cursor's aren't. */
+  matcher?: string;
 }
 
 interface ToolHookConfig {
@@ -20,10 +33,17 @@ interface ToolHookConfig {
 const CURSOR_CONFIG: ToolHookConfig = {
   configRelativePath: path.join('.cursor', 'hooks.json'),
   scripts: [
-    { templateFile: 'cursor/track-edit.sh', destRelative: path.join('.cursor', 'traverspec-hooks', 'track-edit.sh') },
+    {
+      templateFile: 'cursor/track-edit.sh',
+      destRelative: path.join('.cursor', 'traverspec-hooks', 'track-edit.sh'),
+      command: '.cursor/traverspec-hooks/track-edit.sh',
+      event: 'afterFileEdit',
+    },
     {
       templateFile: 'cursor/remind-reconcile.sh',
       destRelative: path.join('.cursor', 'traverspec-hooks', 'remind-reconcile.sh'),
+      command: '.cursor/traverspec-hooks/remind-reconcile.sh',
+      event: 'stop',
     },
   ],
 };
@@ -34,16 +54,43 @@ const CLAUDE_CONFIG: ToolHookConfig = {
     {
       templateFile: 'claude/track-touched-files.sh',
       destRelative: path.join('.claude', 'hooks', 'track-touched-files.sh'),
+      command: '$CLAUDE_PROJECT_DIR/.claude/hooks/track-touched-files.sh',
+      event: 'PostToolUse',
+      matcher: 'Write|Edit',
     },
     {
       templateFile: 'claude/check-reconciliation.sh',
       destRelative: path.join('.claude', 'hooks', 'check-reconciliation.sh'),
+      command: '$CLAUDE_PROJECT_DIR/.claude/hooks/check-reconciliation.sh',
+      event: 'Stop',
+      matcher: '',
     },
   ],
 };
 
 function configFor(tool: HookTool): ToolHookConfig {
   return tool === 'cursor' ? CURSOR_CONFIG : CLAUDE_CONFIG;
+}
+
+/** The hook config file's project-relative path for a tool, without duplicating it elsewhere. */
+export function hookConfigPath(tool: HookTool): string {
+  return configFor(tool).configRelativePath;
+}
+
+/**
+ * A read or write failure on the hook config file that isn't itself a JSON
+ * problem — e.g. permission denied, or the path exists as a directory. Kept
+ * distinct from "isn't valid JSON" so the reported reason actually matches
+ * what went wrong instead of always blaming JSON validity.
+ */
+function fileAccessErrorReason(relPath: string, err: any): string {
+  if (err.code === 'EACCES' || err.code === 'EPERM') {
+    return `${relPath} exists but isn't readable/writable (permission denied). Fix permissions, then run this again.`;
+  }
+  if (err.code === 'EISDIR') {
+    return `${relPath} exists as a directory, not a file. Remove or rename it, then run this again.`;
+  }
+  return `couldn't access ${relPath} — ${err.message}. Run this again, or fix/remove it manually.`;
 }
 
 export function checkJqAvailable(): boolean {
@@ -94,6 +141,22 @@ export function addHooks(
   }
 
   const config = configFor(tool);
+
+  // A symlinked config path or hook-script destination (planted by a
+  // malicious repo, e.g. .claude -> somewhere outside the project) would
+  // otherwise let this write and chmod +x an executable script wherever
+  // that symlink points, fully wired up via the config file written
+  // alongside it. Check every path this function is about to touch before
+  // touching any of them.
+  try {
+    assertPathContained(root, config.configRelativePath);
+    for (const script of config.scripts) {
+      assertPathContained(root, script.destRelative);
+    }
+  } catch (err: any) {
+    return { ok: false, reason: err.message, created: [], skipped: [] };
+  }
+
   const configPath = path.join(root, config.configRelativePath);
 
   let parsed: any = {};
@@ -115,7 +178,7 @@ export function addHooks(
 
   const created: string[] = [];
   const skipped: string[] = [];
-  const merged = tool === 'cursor' ? mergeCursorHooks(parsed, created, skipped) : mergeClaudeHooks(parsed, created, skipped);
+  const merged = tool === 'cursor' ? mergeCursorHooks(config, parsed, created, skipped) : mergeClaudeHooks(config, parsed, created, skipped);
 
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify(merged, null, 2) + '\n');
@@ -132,17 +195,12 @@ export function addHooks(
   return { ok: true, created, skipped };
 }
 
-function mergeCursorHooks(parsed: any, created: string[], skipped: string[]): any {
+function mergeCursorHooks(config: ToolHookConfig, parsed: any, created: string[], skipped: string[]): any {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) parsed = {};
   if (typeof parsed.version !== 'number') parsed.version = 1;
   if (typeof parsed.hooks !== 'object' || parsed.hooks === null) parsed.hooks = {};
 
-  const entries: Array<{ event: string; command: string }> = [
-    { event: 'afterFileEdit', command: '.cursor/traverspec-hooks/track-edit.sh' },
-    { event: 'stop', command: '.cursor/traverspec-hooks/remind-reconcile.sh' },
-  ];
-
-  for (const { event, command } of entries) {
+  for (const { event, command } of config.scripts) {
     if (!Array.isArray(parsed.hooks[event])) parsed.hooks[event] = [];
     const already = parsed.hooks[event].some((h: any) => h && h.command === command);
     if (already) {
@@ -156,20 +214,11 @@ function mergeCursorHooks(parsed: any, created: string[], skipped: string[]): an
   return parsed;
 }
 
-function mergeClaudeHooks(parsed: any, created: string[], skipped: string[]): any {
+function mergeClaudeHooks(config: ToolHookConfig, parsed: any, created: string[], skipped: string[]): any {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) parsed = {};
   if (typeof parsed.hooks !== 'object' || parsed.hooks === null) parsed.hooks = {};
 
-  const entries: Array<{ event: string; matcher: string; command: string }> = [
-    {
-      event: 'PostToolUse',
-      matcher: 'Write|Edit',
-      command: '$CLAUDE_PROJECT_DIR/.claude/hooks/track-touched-files.sh',
-    },
-    { event: 'Stop', matcher: '', command: '$CLAUDE_PROJECT_DIR/.claude/hooks/check-reconciliation.sh' },
-  ];
-
-  for (const { event, matcher, command } of entries) {
+  for (const { event, matcher, command } of config.scripts) {
     if (!Array.isArray(parsed.hooks[event])) parsed.hooks[event] = [];
     const already = parsed.hooks[event].some(
       (block: any) => Array.isArray(block?.hooks) && block.hooks.some((h: any) => h && h.command === command)
@@ -196,47 +245,77 @@ export interface RemoveHooksResult {
  * distinctive script command paths — leaves any other hooks in the same
  * file completely untouched, and drops an event key entirely once it has
  * no entries left rather than leaving an empty array behind.
+ *
+ * With `dryRun: true`, computes and returns exactly what would be removed
+ * without writing, deleting, or cleaning up anything — used by `remove` to
+ * build an accurate preview before asking for confirmation.
  */
-export function removeHooks(root: string, tool: HookTool): RemoveHooksResult {
+export function removeHooks(root: string, tool: HookTool, options: { dryRun?: boolean } = {}): RemoveHooksResult {
   const config = configFor(tool);
+
+  // Same symlink-escape risk as addHooks — a symlinked config path or
+  // script destination could redirect this into modifying or deleting a
+  // file entirely outside the project. Check before touching anything.
+  try {
+    assertPathContained(root, config.configRelativePath);
+    for (const script of config.scripts) {
+      assertPathContained(root, script.destRelative);
+    }
+  } catch (err: any) {
+    return { ok: false, reason: err.message, removed: [] };
+  }
+
   const configPath = path.join(root, config.configRelativePath);
   const removed: string[] = [];
 
   if (fs.existsSync(configPath)) {
+    let raw: string;
+    try {
+      raw = fs.readFileSync(configPath, 'utf8');
+    } catch (err: any) {
+      return { ok: false, reason: fileAccessErrorReason(config.configRelativePath, err), removed: [] };
+    }
+
     let parsed: any;
     try {
-      parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      parsed = JSON.parse(raw);
     } catch (err: any) {
       return {
         ok: false,
-        reason: `${config.configRelativePath} isn't valid JSON — left untouched. Fix or remove it manually.`,
+        reason: `${config.configRelativePath} isn't valid JSON (${err.message}) — left untouched. Fix or remove it manually.`,
         removed: [],
       };
     }
 
     if (parsed?.hooks && typeof parsed.hooks === 'object') {
-      if (tool === 'cursor') removeCursorEntries(parsed.hooks, removed);
-      else removeClaudeEntries(parsed.hooks, removed);
+      if (tool === 'cursor') removeCursorEntries(config, parsed.hooks, removed);
+      else removeClaudeEntries(config, parsed.hooks, removed);
     }
 
-    fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2) + '\n');
+    if (!options.dryRun) {
+      try {
+        fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2) + '\n');
+      } catch (err: any) {
+        return { ok: false, reason: fileAccessErrorReason(config.configRelativePath, err), removed: [] };
+      }
+    }
   }
 
   for (const script of config.scripts) {
     const destPath = path.join(root, script.destRelative);
     if (fs.existsSync(destPath)) {
-      fs.unlinkSync(destPath);
+      if (!options.dryRun) fs.unlinkSync(destPath);
       removed.push(script.destRelative);
     }
   }
 
-  cleanupState(root, tool);
+  if (!options.dryRun) cleanupState(root, tool);
 
   return { ok: true, removed };
 }
 
-function removeCursorEntries(hooks: any, removed: string[]): void {
-  const ourCommands = ['.cursor/traverspec-hooks/track-edit.sh', '.cursor/traverspec-hooks/remind-reconcile.sh'];
+function removeCursorEntries(config: ToolHookConfig, hooks: any, removed: string[]): void {
+  const ourCommands = config.scripts.map((s) => s.command);
   for (const event of Object.keys(hooks)) {
     if (!Array.isArray(hooks[event])) continue;
     const before = hooks[event].length;
@@ -246,11 +325,8 @@ function removeCursorEntries(hooks: any, removed: string[]): void {
   }
 }
 
-function removeClaudeEntries(hooks: any, removed: string[]): void {
-  const ourCommands = [
-    '$CLAUDE_PROJECT_DIR/.claude/hooks/track-touched-files.sh',
-    '$CLAUDE_PROJECT_DIR/.claude/hooks/check-reconciliation.sh',
-  ];
+function removeClaudeEntries(config: ToolHookConfig, hooks: any, removed: string[]): void {
+  const ourCommands = config.scripts.map((s) => s.command);
   for (const event of Object.keys(hooks)) {
     if (!Array.isArray(hooks[event])) continue;
     hooks[event] = hooks[event]
@@ -268,15 +344,21 @@ function removeClaudeEntries(hooks: any, removed: string[]): void {
 
 function cleanupState(root: string, tool: HookTool): void {
   if (tool === 'cursor') {
+    // .cursor/traverspec-hooks/ is a dedicated subfolder this tool owns
+    // exclusively, so it's safe to remove wholesale once empty.
     const hooksDir = path.join(root, '.cursor', 'traverspec-hooks');
     const stateDir = path.join(hooksDir, 'state');
     if (fs.existsSync(stateDir)) fs.rmSync(stateDir, { recursive: true, force: true });
     if (fs.existsSync(hooksDir) && fs.readdirSync(hooksDir).length === 0) fs.rmdirSync(hooksDir);
   } else {
+    // .claude/hooks/ is shared with any other tool's own hooks, so cleanup
+    // here can only ever touch files unambiguously namespaced as ours —
+    // never the directory itself, and never a bare "state-" prefix that
+    // some other tool's own state file could just as easily match.
     const claudeHooksDir = path.join(root, '.claude', 'hooks');
     if (fs.existsSync(claudeHooksDir)) {
       for (const f of fs.readdirSync(claudeHooksDir)) {
-        if (f.startsWith('state-')) fs.unlinkSync(path.join(claudeHooksDir, f));
+        if (f.startsWith(CLAUDE_STATE_FILE_PREFIX)) fs.unlinkSync(path.join(claudeHooksDir, f));
       }
     }
   }

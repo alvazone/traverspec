@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import { checkReferentialIntegrity, checkAssetContentPresence, checkSkillFilesPresent } from './rules';
+import { checkReferentialIntegrity, checkAssetContentPresence } from './rules';
 
 const FIXTURES_ROOT = path.join(__dirname, '..', '..', 'test-fixtures');
 
@@ -79,20 +79,5 @@ describe('checkAssetContentPresence against real fixture projects', () => {
       edges: [],
     };
     expect(checkAssetContentPresence(raw, specRoot)).toEqual([]);
-  });
-});
-
-describe('checkSkillFilesPresent against real fixture projects', () => {
-  const templatesSkillsDir = path.join(__dirname, '..', '..', 'templates', 'skills');
-
-  it('valid-project has all required skill files', () => {
-    const projectRoot = path.join(FIXTURES_ROOT, 'valid-project');
-    expect(checkSkillFilesPresent(projectRoot, templatesSkillsDir)).toEqual([]);
-  });
-
-  it('missing-skill-file-project flags the missing file', () => {
-    const projectRoot = path.join(FIXTURES_ROOT, 'missing-skill-file-project');
-    const findings = checkSkillFilesPresent(projectRoot, templatesSkillsDir);
-    expect(findings.some((f) => f.message.includes('derive_spec_from_code.md'))).toBe(true);
   });
 });

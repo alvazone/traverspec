@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { upsertMarkedBlock, HASH_COMMENT_MARKERS } from './markerBlock';
+import { assertPathContained } from './pathSafety';
 
 export type CodeownersPlatform = 'github' | 'gitlab';
 
@@ -38,16 +39,21 @@ export function addCodeowners(root: string, platform: CodeownersPlatform, owner 
   const locations = LOCATIONS[platform];
 
   let target: string | undefined;
+  let targetRel: string | undefined;
   for (const loc of locations) {
     const full = path.join(root, loc);
     if (fs.existsSync(full)) {
+      assertPathContained(root, loc);
       target = full;
+      targetRel = loc;
       break;
     }
   }
 
   if (!target) {
-    target = path.join(root, locations[0]);
+    targetRel = locations[0];
+    assertPathContained(root, targetRel);
+    target = path.join(root, targetRel);
     fs.mkdirSync(path.dirname(target), { recursive: true });
   }
 

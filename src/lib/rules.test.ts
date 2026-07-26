@@ -4,6 +4,7 @@ import {
   checkTypeLegality,
   checkOverridesDirection,
   checkSequentialNumbering,
+  checkGraphYamlSubsetCompatibility,
 } from './rules';
 
 describe('checkStructuralShape', () => {
@@ -161,5 +162,38 @@ describe('checkSequentialNumbering', () => {
     const raw = { nodes: [{ id: 'business_rule:BR-1', type: 'business_rule' }] };
     const findings = checkSequentialNumbering(raw);
     expect(findings.some((f) => f.message.includes('does not match'))).toBe(true);
+  });
+});
+
+describe('checkGraphYamlSubsetCompatibility', () => {
+  it('passes text that is both valid YAML and inside the bundled parser\'s supported subset', () => {
+    const text = `epics: []
+nodes:
+  - id: feature:a
+    type: feature
+    path: assets/feature/a.md
+edges: []
+`;
+    expect(checkGraphYamlSubsetCompatibility(text)).toEqual([]);
+  });
+
+  it('flags legal YAML that the bundled wave-skeleton script cannot parse, without failing to a crash', () => {
+    // Quoting is perfectly valid YAML — js-yaml (what `validate` otherwise
+    // uses) parses this fine — but it's outside the narrow subset the
+    // bundled script supports, which is exactly the gap this check exists
+    // to close: a clean `validate` run should not be possible on a file
+    // that would still make wave-skeleton.js throw.
+    const text = `nodes:
+  - id: feature:a
+    type: feature
+    path: "assets/feature/a.md"
+edges: []
+epics: []
+`;
+    const findings = checkGraphYamlSubsetCompatibility(text);
+    expect(findings).toHaveLength(1);
+    expect(findings[0].rule).toBe('graph-yaml-subset');
+    expect(findings[0].message).toContain('Fix:');
+    expect(findings[0].message).toContain('traverspec validate');
   });
 });

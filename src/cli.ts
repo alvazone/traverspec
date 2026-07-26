@@ -5,8 +5,7 @@ import { validateCommand } from './commands/validate';
 import { addAgentCommand } from './commands/addAgent';
 import { addCodeownersCommand } from './commands/addCodeowners';
 import { removeCommand } from './commands/remove';
-import { refreshSkillsCommand } from './commands/refreshSkills';
-import { checkPlanCommand } from './commands/checkPlan';
+import { checkWavesCommand } from './commands/checkWaves';
 import { listCommand } from './commands/list';
 import { showCommand } from './commands/show';
 import { addHooksCommand } from './commands/addHooks';
@@ -23,8 +22,7 @@ program
 
 program
   .command('init')
-  .description('Scaffold the traverspec/ folder structure and agent entry files in the current project')
-  .option('--agent <names>', 'comma-separated list of agent tools to wire up (cursor, claude)')
+  .description('Scaffold the traverspec/ folder structure, install skills to .agents/skills/, and write AGENTS.md')
   .action(initCommand);
 
 program
@@ -48,8 +46,8 @@ program
   .action(showCommand);
 
 program
-  .command('add-agent <names>')
-  .description('Wire up one or more additional coding tools without re-running init (comma-separated: cursor, claude)')
+  .command('add-agent [agent]')
+  .description('Wire up AGENTS.md + .agents/skills/ (no argument), or `claude` for CLAUDE.md + .claude/skills/')
   .action(addAgentCommand);
 
 program
@@ -65,16 +63,10 @@ program
   .action(removeCommand);
 
 program
-  .command('refresh-skills')
-  .description('Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file')
-  .option('-y, --yes', 'skip the confirmation prompt for files with real content differences')
-  .action(refreshSkillsCommand);
-
-program
-  .command('check-plan')
-  .description('Check whether traverspec/plan/plan.md still matches the current graph.yaml, or is stale')
+  .command('check-waves')
+  .description('Check whether traverspec/waves/waves.md still matches the current graph.yaml, or is stale')
   .option('--json', 'output machine-readable JSON instead of a human-readable report')
-  .action(checkPlanCommand);
+  .action(checkWavesCommand);
 
 program
   .command('add-hooks <tool>')

@@ -5,7 +5,7 @@ export function addHooksCommand(tool: string): void {
   const normalized = tool?.toLowerCase();
 
   if (!KNOWN_HOOK_TOOLS.includes(normalized as HookTool)) {
-    console.log(`Usage: traverspec add-hooks <${KNOWN_HOOK_TOOLS.join('|')}>`);
+    console.error(`Usage: traverspec add-hooks <${KNOWN_HOOK_TOOLS.join('|')}>`);
     process.exitCode = 1;
     return;
   }
@@ -13,7 +13,7 @@ export function addHooksCommand(tool: string): void {
   const result = addHooks(root, normalized as HookTool);
 
   if (!result.ok) {
-    console.log(`traverspec add-hooks: ${result.reason}`);
+    console.error(`traverspec add-hooks: ${result.reason}`);
     process.exitCode = 1;
     return;
   }

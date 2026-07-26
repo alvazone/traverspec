@@ -13,7 +13,6 @@ COUNT=$(jq '.touched_files | length' "$STATE_FILE")
 FILES=$(jq -r '.touched_files | join(", ")' "$STATE_FILE")
 echo '{"touched_files": []}' > "$STATE_FILE"
 
-cat <<EOF
-{"followup_message": "Before finishing: $FILES changed since the last check. Read traverspec/skills/reconcile.md and check whether traverspec/graph.yaml still matches, using traverspec show to scope it."}
-EOF
+jq -n --arg files "$FILES" \
+  '{followup_message: ("Before finishing: " + $files + " changed since the last check. Use the traverspec-reconcile skill to check whether traverspec/graph.yaml still matches the changed files, using traverspec show to scope it.")}'
 exit 0

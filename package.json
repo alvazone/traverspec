@@ -39,7 +39,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node build/copySkillScripts.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "prepare": "npm run build"

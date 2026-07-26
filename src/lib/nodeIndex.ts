@@ -8,6 +8,7 @@ export interface ListEntry {
   path: string;
   title: string | null;
   description: string | null;
+  assetError: string | null;
 }
 
 const DESCRIPTION_CAP = 120;
@@ -70,17 +71,59 @@ export function extractTitleAndDescription(content: string): { title: string | n
   return { title, description };
 }
 
+/**
+ * Reads and extracts title/description for one node's asset file, isolated
+ * from every other node: nothing this does — a bad path, a directory
+ * where a file was expected, a permission error, anything else on this
+ * one node — should ever be able to take down the rest of the list.
+ * Every failure degrades to a specific, actionable assetError string
+ * instead of throwing.
+ */
+function readAssetEntry(
+  specRoot: string,
+  nodePath: string
+): { title: string | null; description: string | null; assetError: string | null } {
+  const resolvedRoot = path.resolve(specRoot);
+  const resolvedPath = path.resolve(specRoot, nodePath);
+
+  if (resolvedPath !== resolvedRoot && !resolvedPath.startsWith(resolvedRoot + path.sep)) {
+    return {
+      title: null,
+      description: null,
+      assetError:
+        "path escapes the traverspec/ folder — fix this node's path in graph.yaml to a relative path " +
+        "under traverspec/ (e.g. assets/feature/x.md), it should never need to leave that folder",
+    };
+  }
+
+  try {
+    if (!fs.existsSync(resolvedPath)) {
+      return { title: null, description: null, assetError: 'asset file missing — run `traverspec validate`' };
+    }
+    if (!fs.statSync(resolvedPath).isFile()) {
+      return {
+        title: null,
+        description: null,
+        assetError: "path points at a directory, not a file — fix this node's path in graph.yaml",
+      };
+    }
+    const content = fs.readFileSync(resolvedPath, 'utf8');
+    const { title, description } = extractTitleAndDescription(content);
+    return { title, description, assetError: null };
+  } catch (err: any) {
+    return {
+      title: null,
+      description: null,
+      assetError: `couldn't read this file — ${err.message} — run \`traverspec validate\` for a full diagnosis`,
+    };
+  }
+}
+
 export function buildListEntries(graph: ParsedGraph, specRoot: string, typeFilter?: string): ListEntry[] {
   const nodes: GraphNode[] = typeFilter ? graph.nodes.filter((n) => n.type === typeFilter) : graph.nodes;
 
   return nodes.map((n) => {
-    const fullPath = path.join(specRoot, n.path);
-    let title: string | null = null;
-    let description: string | null = null;
-    if (fs.existsSync(fullPath)) {
-      const content = fs.readFileSync(fullPath, 'utf8');
-      ({ title, description } = extractTitleAndDescription(content));
-    }
-    return { id: n.id, type: n.type, path: n.path, title, description };
+    const { title, description, assetError } = readAssetEntry(specRoot, n.path);
+    return { id: n.id, type: n.type, path: n.path, title, description, assetError };
   });
 }

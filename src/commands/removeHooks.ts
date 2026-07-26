@@ -5,7 +5,7 @@ export function removeHooksCommand(tool: string): void {
   const normalized = tool?.toLowerCase();
 
   if (!KNOWN_HOOK_TOOLS.includes(normalized as HookTool)) {
-    console.log(`Usage: traverspec remove-hooks <${KNOWN_HOOK_TOOLS.join('|')}>`);
+    console.error(`Usage: traverspec remove-hooks <${KNOWN_HOOK_TOOLS.join('|')}>`);
     process.exitCode = 1;
     return;
   }
@@ -13,7 +13,7 @@ export function removeHooksCommand(tool: string): void {
   const result = removeHooks(root, normalized as HookTool);
 
   if (!result.ok) {
-    console.log(`traverspec remove-hooks: ${result.reason}`);
+    console.error(`traverspec remove-hooks: ${result.reason}`);
     process.exitCode = 1;
     return;
   }

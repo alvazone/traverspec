@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { NODE_TYPES, EDGE_TYPES } from './types';
+import { parseGraphYamlText, GraphYamlParseError } from './graphYamlParser';
 
 export interface Finding {
   rule: string;
@@ -8,17 +9,6 @@ export interface Finding {
 }
 
 export { NODE_TYPES, EDGE_TYPES };
-
-export const REQUIRED_SKILL_FILES = [
-  'start_here.md',
-  'structure_reference.md',
-  'traversal_policy.md',
-  'ingest_spec.md',
-  'author_via_chat.md',
-  'derive_spec_from_code.md',
-  'reconcile.md',
-  'plan.md',
-];
 
 function isScalar(value: unknown): boolean {
   return value === null || (typeof value !== 'object' && !Array.isArray(value));
@@ -32,7 +22,16 @@ function checkShape(
 ): Finding[] {
   const findings: Finding[] = [];
   for (const entry of entries) {
-    const keys = Object.keys(entry ?? {});
+    if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+      findings.push({
+        rule: 'structural-shape',
+        message: `an entry in this section is not a proper mapping (found ${
+          entry === null ? 'null' : Array.isArray(entry) ? 'a list' : typeof entry
+        }) — expected 'key: value' fields`,
+      });
+      continue;
+    }
+    const keys = Object.keys(entry);
     const extra = keys.filter((k) => !allowedKeys.includes(k));
     const missing = requiredKeys.filter((k) => !keys.includes(k));
     if (extra.length || missing.length) {
@@ -74,6 +73,27 @@ export function checkStructuralShape(raw: any): Finding[] {
       (e) => `edge '${e?.from ?? '?'} --${e?.type ?? '?'}--> ${e?.to ?? '?'}'`
     ),
   ];
+}
+
+/**
+ * Runs the same hand-rolled parser the bundled traverspec-waves skill script
+ * uses (see src/lib/graphYamlParser.ts) against the raw text, purely to
+ * surface here anything that's legal YAML (so js-yaml above parsed it fine)
+ * but outside that parser's narrower supported subset. Without this, a
+ * graph.yaml could pass `validate` cleanly and still make the bundled
+ * script throw the first time the traverspec-waves skill runs, with no
+ * earlier signal that anything was wrong.
+ */
+export function checkGraphYamlSubsetCompatibility(text: string): Finding[] {
+  try {
+    parseGraphYamlText(text);
+    return [];
+  } catch (err) {
+    if (err instanceof GraphYamlParseError) {
+      return [{ rule: 'graph-yaml-subset', message: err.message }];
+    }
+    throw err;
+  }
 }
 
 export function checkTypeLegality(raw: any): Finding[] {
@@ -222,7 +242,7 @@ export function checkSequentialNumbering(raw: any): Finding[] {
   for (const { label, pattern, nodes } of Object.values(groups)) {
     const numbers: number[] = [];
     for (const node of nodes) {
-      const m = node.id.match(pattern);
+      const m = typeof node.id === 'string' ? node.id.match(pattern) : null;
       if (!m) {
         findings.push({
           rule: 'sequential-numbering',
@@ -255,18 +275,3 @@ export function checkSequentialNumbering(raw: any): Finding[] {
   return findings;
 }
 
-export function checkSkillFilesPresent(projectRoot: string, templatesSkillsDir: string): Finding[] {
-  const findings: Finding[] = [];
-  const skillsDir = path.join(projectRoot, 'traverspec', 'skills');
-  const required = fs.existsSync(templatesSkillsDir) ? fs.readdirSync(templatesSkillsDir) : REQUIRED_SKILL_FILES;
-
-  for (const file of required) {
-    if (!fs.existsSync(path.join(skillsDir, file))) {
-      findings.push({
-        rule: 'skill-files-present',
-        message: `required skill file 'traverspec/skills/${file}' is missing`,
-      });
-    }
-  }
-  return findings;
-}

@@ -3,7 +3,7 @@ command -v jq >/dev/null 2>&1 || { echo "TraverSpec hook: jq not found, install 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id')
-STATE_FILE="$CLAUDE_PROJECT_DIR/.claude/hooks/state-$SESSION_ID.json"
+STATE_FILE="$CLAUDE_PROJECT_DIR/.claude/hooks/traverspec-state-$SESSION_ID.json"
 
 [[ -z "$FILE_PATH" ]] && exit 0
 [[ "$FILE_PATH" == *"/traverspec/"* ]] && exit 0

@@ -96,8 +96,7 @@ This additionally writes `CLAUDE.md` (a one-line import of `AGENTS.md`).
 | `traverspec validate [--json]` | Structural and referential integrity check. Non-zero exit on any issue. |
 | `traverspec list [--type <type>] [--json]` | Lightweight id/type/title/description index of every node, for resolving a node id before using `show`. |
 | `traverspec show <node_id>[,<node_id>...] [--direction forward\|reverse\|both] [--json]` | Dependency/impact closure for one or more nodes, grouped by level (hop distance) as `graph.yaml`-shaped edges. Direction defaults to `both`. |
-| `traverspec check-plan [--json]` | Check whether `traverspec/plan/plan.md` still matches the current `graph.yaml`, or is stale. |
-| `traverspec refresh-skills [--yes]` | Pull in skill-file updates from the installed package version, with confirmation before overwriting any customized file. |
+| `traverspec check-waves [--json]` | Check whether `traverspec/waves/waves.md` still matches the current `graph.yaml`, or is stale. |
 | `traverspec add-codeowners --tool <github\|gitlab>` | Gate changes to `traverspec/` behind review. Never run automatically, opt-in since solo projects don't need it. |
 | `traverspec add-hooks <cursor\|claude>` | Wire up an opt-in nudge to run `reconcile.md` after editing code, before finishing a turn. Merges into any existing hooks config for that tool, never overwrites it. Requires `jq`. |
 | `traverspec remove-hooks <cursor\|claude>` | Remove only the hook entries `add-hooks` added, leaving any other hooks in that same config untouched. |
@@ -122,7 +121,7 @@ To control who can change the spec itself, run `traverspec add-codeowners --tool
 | `derive_spec_from_code.md` | Generating the graph, or reconciling it wholesale, against a codebase that isn't mapped into the graph yet. |
 | `reconcile.md` | Checking existing nodes against existing code, on demand, scoped to one entry point at a time — narrower and more frequent than a full `derive_spec_from_code.md` pass. |
 | `author_via_chat.md` | Building a spec through conversation, when the information only exists in someone's head and hasn't been written down anywhere yet. |
-| `plan.md` | Deriving a dependency-ordered build plan (features grouped into sequential waves) from the graph's edges plus prose in `traverspec/assets/`. |
+| `traverspec-waves` | Deriving a dependency-ordered build sequence (features grouped into sequential waves) from the graph's edges plus prose in `traverspec/assets/`. |
 
 ## VS Code extension
 

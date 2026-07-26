@@ -59,6 +59,29 @@ describe('addCodeowners — github', () => {
     const second = addCodeowners(tmpDir, 'github');
     expect(second.action).toBe('unchanged');
   });
+
+  it('refuses to write through an existing CODEOWNERS file that is a symlink escaping the project', () => {
+    const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codeowners-outside-'));
+    const victim = path.join(outsideDir, 'victim.txt');
+    fs.writeFileSync(victim, 'sensitive content\n');
+    fs.mkdirSync(path.join(tmpDir, '.github'));
+    fs.symlinkSync(victim, path.join(tmpDir, '.github', 'CODEOWNERS'));
+
+    expect(() => addCodeowners(tmpDir, 'github')).toThrow(/resolves outside the project/);
+    expect(fs.readFileSync(victim, 'utf8')).toBe('sensitive content\n'); // untouched
+
+    fs.rmSync(outsideDir, { recursive: true, force: true });
+  });
+
+  it('refuses to write when the parent directory itself is a symlink escaping the project', () => {
+    const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codeowners-outside-'));
+    fs.symlinkSync(outsideDir, path.join(tmpDir, '.github'));
+
+    expect(() => addCodeowners(tmpDir, 'github')).toThrow(/resolves outside the project/);
+    expect(fs.existsSync(path.join(outsideDir, 'CODEOWNERS'))).toBe(false);
+
+    fs.rmSync(outsideDir, { recursive: true, force: true });
+  });
 });
 
 describe('addCodeowners — gitlab', () => {

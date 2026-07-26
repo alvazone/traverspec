@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { applyAgents } from '../lib/agents';
-import { loadSkillVersions, saveSkillVersions, getCurrentPackageVersion } from '../lib/skillVersions';
+import { writeAgentsMd } from '../lib/agents';
+import { checkPackageInstallHealthy, installSkillsInto } from '../lib/skillInstall';
 
 const ASSET_TYPES = [
   'epic',
@@ -12,77 +12,99 @@ const ASSET_TYPES = [
   'decision',
 ];
 
-const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
-
-export interface InitOptions {
-  agent?: string;
+function brokenInstallError(detail: string): void {
+  console.error(
+    `traverspec init failed: ${detail}\n` +
+      `Fix: this usually means a broken or partial install — reinstall with ` +
+      `\`npm install --save-dev @alvazone/traverspec\` and try again.`
+  );
+  process.exitCode = 1;
 }
 
-export function initCommand(options: InitOptions): void {
+function record(name: string, result: 'created' | 'updated' | 'unchanged', created: string[], skipped: string[]): void {
+  if (result === 'created') created.push(name);
+  else if (result === 'updated') created.push(`${name} (updated)`);
+  else skipped.push(`${name} (already up to date)`);
+}
+
+export function initCommand(): void {
   const root = process.cwd();
   const specRoot = path.join(root, 'traverspec');
+  const agentsSkillsDir = path.join(root, '.agents', 'skills');
+
+  // Preflight: catch a broken/partial package install before touching the
+  // target project at all, with a message that points at the actual cause
+  // instead of a generic failure surfacing later mid-write.
+  const health = checkPackageInstallHealthy();
+  if (!health.ok) {
+    return brokenInstallError(health.detail!);
+  }
 
   const created: string[] = [];
   const skipped: string[] = [];
+  let removedOldSkills = false;
+  let installedSkills: string[] = [];
+  let failedSkills: Array<{ name: string; error: string }> = [];
 
-  fs.mkdirSync(specRoot, { recursive: true });
+  try {
+    fs.mkdirSync(specRoot, { recursive: true });
 
-  for (const name of ['about.md', 'constitution.md']) {
-    const p = path.join(specRoot, name);
-    if (fs.existsSync(p)) {
-      skipped.push(`traverspec/${name}`);
+    for (const name of ['about.md', 'constitution.md']) {
+      const p = path.join(specRoot, name);
+      if (fs.existsSync(p)) {
+        skipped.push(`traverspec/${name}`);
+      } else {
+        fs.writeFileSync(p, '');
+        created.push(`traverspec/${name}`);
+      }
+    }
+
+    const graphPath = path.join(specRoot, 'graph.yaml');
+    if (fs.existsSync(graphPath)) {
+      skipped.push('traverspec/graph.yaml');
     } else {
-      fs.writeFileSync(p, '');
-      created.push(`traverspec/${name}`);
+      fs.writeFileSync(graphPath, 'epics: []\nnodes: []\nedges: []\n');
+      created.push('traverspec/graph.yaml');
     }
-  }
 
-  const graphPath = path.join(specRoot, 'graph.yaml');
-  if (fs.existsSync(graphPath)) {
-    skipped.push('traverspec/graph.yaml');
-  } else {
-    fs.writeFileSync(graphPath, 'epics: []\nnodes: []\nedges: []\n');
-    created.push('traverspec/graph.yaml');
-  }
-
-  const assetsRoot = path.join(specRoot, 'assets');
-  for (const type of ASSET_TYPES) {
-    const typeDir = path.join(assetsRoot, type);
-    fs.mkdirSync(typeDir, { recursive: true });
-    const gitkeep = path.join(typeDir, '.gitkeep');
-    const hasOtherFiles = fs.readdirSync(typeDir).some((f) => f !== '.gitkeep');
-    if (!hasOtherFiles && !fs.existsSync(gitkeep)) {
-      fs.writeFileSync(gitkeep, '');
+    const assetsRoot = path.join(specRoot, 'assets');
+    for (const type of ASSET_TYPES) {
+      const typeDir = path.join(assetsRoot, type);
+      fs.mkdirSync(typeDir, { recursive: true });
+      const gitkeep = path.join(typeDir, '.gitkeep');
+      const hasOtherFiles = fs.readdirSync(typeDir).some((f) => f !== '.gitkeep');
+      if (!hasOtherFiles && !fs.existsSync(gitkeep)) {
+        fs.writeFileSync(gitkeep, '');
+      }
     }
-  }
 
-  const skillsDir = path.join(specRoot, 'skills');
-  fs.mkdirSync(skillsDir, { recursive: true });
-  const templateSkillsDir = path.join(TEMPLATES_DIR, 'skills');
-  const skillVersions = loadSkillVersions(root);
-  const currentVersion = getCurrentPackageVersion();
-  let skillVersionsChanged = false;
-  for (const file of fs.readdirSync(templateSkillsDir)) {
-    const dest = path.join(skillsDir, file);
-    if (fs.existsSync(dest)) {
-      skipped.push(`traverspec/skills/${file}`);
-    } else {
-      fs.copyFileSync(path.join(templateSkillsDir, file), dest);
-      created.push(`traverspec/skills/${file}`);
-      skillVersions[file] = currentVersion;
-      skillVersionsChanged = true;
+    // traverspec/skills/ is a superseded location — skills now live in
+    // .agents/skills/ so most agentic tools pick them up natively. Remove
+    // it outright rather than leaving stale content behind.
+    const oldSkillsDir = path.join(specRoot, 'skills');
+    if (fs.existsSync(oldSkillsDir)) {
+      fs.rmSync(oldSkillsDir, { recursive: true, force: true });
+      removedOldSkills = true;
     }
-  }
-  if (skillVersionsChanged) {
-    saveSkillVersions(root, skillVersions);
+
+    const skillResult = installSkillsInto(agentsSkillsDir, health.skillNames);
+    installedSkills = skillResult.installedSkills;
+    failedSkills = skillResult.failedSkills;
+
+    record('AGENTS.md', writeAgentsMd(root), created, skipped);
+  } catch (err: any) {
+    const hint =
+      err.code === 'EACCES' || err.code === 'EPERM'
+        ? "check that this directory is writable, then run `traverspec init` again — it's safe to re-run."
+        : err.code === 'ENOSPC'
+        ? "check available disk space, then run `traverspec init` again — it's safe to re-run."
+        : "run `traverspec init` again — it's safe to re-run. If this keeps happening, it may indicate a broken install.";
+    console.error(`traverspec init failed: ${err.message}\nWhere: writing into ${root}.\nFix: ${hint}`);
+    process.exitCode = 1;
+    return;
   }
 
-  const requestedAgents = options.agent ? options.agent.split(',') : [];
-  const agentResult = applyAgents(root, requestedAgents);
-  created.push(...agentResult.created);
-  skipped.push(...agentResult.skipped);
-
-  console.log('traverspec init complete.\n');
+  console.log(failedSkills.length ? 'traverspec init finished with errors.\n' : 'traverspec init complete.\n');
 
   if (created.length) {
     console.log('Created:');
@@ -94,20 +116,29 @@ export function initCommand(options: InitOptions): void {
     skipped.forEach((f) => console.log(`  = ${f}`));
   }
 
-  if (agentResult.unknown.length) {
-    console.log(`\nUnrecognized --agent value(s), ignored: ${agentResult.unknown.join(', ')}`);
+  if (installedSkills.length) {
+    console.log(`\nSkills installed fresh in .agents/skills/ (${installedSkills.length}):`);
+    installedSkills.forEach((n) => console.log(`  * ${n}`));
   }
 
-  if (!options.agent) {
-    console.log(
-      '\nNo --agent specified, so only AGENTS.md was written. ' +
-        'Run with --agent claude (or --agent cursor,claude) to also wire up CLAUDE.md, ' +
-        'or run `traverspec add-agent <name>` later.'
-    );
+  if (removedOldSkills) {
+    console.log('\nRemoved traverspec/skills/ — superseded by .agents/skills/.');
+  }
+
+  if (failedSkills.length) {
+    console.log(`\n${failedSkills.length} skill(s) failed to install:`);
+    failedSkills.forEach((f) => console.log(`  ! ${f.name}: ${f.error}`));
+    console.log('Fix: run `traverspec init` again — it only retries what failed, everything else is untouched.');
+    process.exitCode = 1;
   }
 
   console.log(
-    '\nTip: if your team wants changes to traverspec/skills/ to require review, ' +
+    '\nTip: if your team wants changes to traverspec/ (the graph and assets) to require review, ' +
       'run `traverspec add-codeowners --tool github` (or --tool gitlab).'
+  );
+
+  console.log(
+    '\nUsing Claude Code? Run `npx traverspec add-agent claude` ' +
+      '(or `traverspec add-agent claude` if installed globally) to also wire up CLAUDE.md.'
   );
 }
